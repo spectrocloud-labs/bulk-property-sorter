@@ -1,15 +1,15 @@
 {
   "name": "bulk-property-sorter",
   "displayName": "Bulk Property Sorter",
-  "description": "VS Code extension that provides property sorting for TypeScript, JavaScript, CSS, SCSS, SASS, LESS, and Go files",
-  "version": "0.5.0",
-  "publisher": "spectro-cloud",
+  "description": "VS Code extension that provides bulk, recursive, and customizable property sorting for TypeScript, JavaScript, CSS, SCSS, SASS, LESS, JSON, and Go files",
+  "version": "0.6.0",
+  "publisher": "spectrocloud",
   "engines": {
     "vscode": "^1.83.0"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/spectrocloud/bulk-property-sorter.git"
+    "url": "https://github.com/spectrocloud-labs/bulk-property-sorter.git"
   },
   "icon": "images/logo.png",
   "categories": [
@@ -25,7 +25,9 @@
     "onLanguage:scss",
     "onLanguage:sass",
     "onLanguage:less",
-    "onLanguage:go"
+    "onLanguage:go",
+    "onLanguage:json",
+    "onLanguage:jsonc"
   ],
   "main": "./out/src/extension.js",
   "contributes": {
@@ -216,6 +218,39 @@
           "type": "boolean",
           "default": false,
           "description": "Keep related methods together based on common functionality patterns."
+        },
+        "bulk-property-sorter.json.sortObjectKeys": {
+          "type": "boolean",
+          "default": true,
+          "description": "Sort object keys alphabetically in JSON files."
+        },
+        "bulk-property-sorter.json.preserveArrayOrder": {
+          "type": "boolean",
+          "default": true,
+          "description": "Preserve the original order of array elements instead of sorting them."
+        },
+        "bulk-property-sorter.json.sortNestedObjects": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable recursive sorting of properties in nested JSON objects."
+        },
+        "bulk-property-sorter.json.customKeyOrder": {
+          "type": "array",
+          "default": [],
+          "description": "Custom key order list for JSON objects. Keys matching these names will be sorted first in the specified order.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "bulk-property-sorter.json.groupBySchema": {
+          "type": "boolean",
+          "default": false,
+          "description": "Group JSON properties by common schema patterns (e.g., metadata, configuration, data)."
+        },
+        "bulk-property-sorter.json.preserveComments": {
+          "type": "boolean",
+          "default": true,
+          "description": "Preserve comments in JSON files (JSONC format). Note: Standard JSON does not support comments."
         },
         "bulk-property-sorter.sorting.caseSensitive": {
           "type": "boolean",

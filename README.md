@@ -1,10 +1,10 @@
 # Bulk Property Sorter
 
-A VS Code extension that provides intelligent property sorting for TypeScript, JavaScript, CSS, SCSS, SASS, LESS, and Go files while preserving comments, formatting, and code structure.
+A VS Code extension that provides intelligent property sorting for TypeScript, JavaScript, CSS, SCSS, SASS, LESS, JSON, and Go files while preserving comments, formatting, and code structure.
 
 ## Features
 
-- **Multi-language Support**: Sort properties in TypeScript/JavaScript interfaces, object literals, CSS rules, and Go structs
+- **Multi-language Support**: Sort properties in TypeScript/JavaScript interfaces, object literals, CSS rules, JSON objects, and Go structs
 - **Smart Comment Preservation**: Maintains inline and block comments with their associated properties
 - **Recursive Nested Sorting**: Sort properties in nested object declarations and CSS rules (configurable)
 - **Spread Syntax Support**: Preserve object spread syntax (`...obj`) properties during sorting
@@ -290,9 +290,178 @@ type Order struct {
 }
 ```
 
+### JSON
+
+**Package.json Sorting:**
+```json
+// Before
+{
+    "scripts": {
+        "test": "npm run compile && node ./out/test/runTest.js",
+        "compile": "tsc -p ./"
+    },
+    "name": "bulk-property-sorter",
+    "version": "0.5.1",
+    "description": "Sort properties in TypeScript interfaces, objects, and more",
+    "main": "./out/extension.js",
+    "engines": {
+        "vscode": "^1.83.0"
+    }
+}
+
+// After
+{
+    "description": "Sort properties in TypeScript interfaces, objects, and more",
+    "engines": {
+        "vscode": "^1.83.0"
+    },
+    "main": "./out/extension.js",
+    "name": "bulk-property-sorter",
+    "scripts": {
+        "compile": "tsc -p ./",
+        "test": "npm run compile && node ./out/test/runTest.js"
+    },
+    "version": "0.5.1"
+}
+```
+
+**Configuration Files with Custom Key Order:**
+```json
+// Before
+{
+    "dependencies": {
+        "react": "^18.0.0",
+        "typescript": "^4.9.0"
+    },
+    "name": "my-app",
+    "version": "1.0.0",
+    "description": "A sample application"
+}
+
+// After (with custom key order: name, version, description)
+{
+    "name": "my-app",
+    "version": "1.0.0",
+    "description": "A sample application",
+    "dependencies": {
+        "react": "^18.0.0",
+        "typescript": "^4.9.0"
+    }
+}
+```
+
+**API Response JSON:**
+```json
+// Before
+{
+    "meta": {
+        "version": "v1",
+        "timestamp": "2023-12-01T10:00:00Z"
+    },
+    "data": {
+        "users": [
+            {
+                "profile": {
+                    "lastName": "Doe",
+                    "firstName": "John"
+                },
+                "email": "john@example.com",
+                "id": 1,
+                "username": "john_doe"
+            }
+        ]
+    },
+    "status": "success"
+}
+
+// After (with nested sorting enabled)
+{
+    "data": {
+        "users": [
+            {
+                "email": "john@example.com",
+                "id": 1,
+                "profile": {
+                    "firstName": "John",
+                    "lastName": "Doe"
+                },
+                "username": "john_doe"
+            }
+        ]
+    },
+    "meta": {
+        "timestamp": "2023-12-01T10:00:00Z",
+        "version": "v1"
+    },
+    "status": "success"
+}
+```
+
+**JSONC (JSON with Comments) Support:**
+```jsonc
+// Before
+{
+    // Application configuration
+    "database": {
+        "port": 5432,
+        "host": "localhost" // Default database host
+    },
+    "cache": {
+        "redis": {
+            "url": "redis://localhost:6379"
+        }
+    },
+    /* 
+     * Application metadata
+     */
+    "name": "my-api",
+    "version": "1.0.0"
+}
+
+// After (comments preserved with their properties)
+{
+    /* 
+     * Application metadata
+     */
+    "cache": {
+        "redis": {
+            "url": "redis://localhost:6379"
+        }
+    },
+    // Application configuration
+    "database": {
+        "host": "localhost", // Default database host
+        "port": 5432
+    },
+    "name": "my-api",
+    "version": "1.0.0"
+}
+```
+
+**Array Order Preservation:**
+```json
+// Before (arrays preserve order by default)
+{
+    "steps": [
+        "compile",
+        "test",
+        "deploy"
+    ],
+    "environments": ["dev", "staging", "prod"]
+}
+
+// After (array elements maintain their original order)
+{
+    "environments": ["dev", "staging", "prod"],
+    "steps": [
+        "compile",
+        "test", 
+        "deploy"
+    ]
+}
+```
+
 ## Configuration
-
-
 
 ## Supported File Types
 
@@ -302,6 +471,7 @@ type Order struct {
 - **SCSS**: `.scss` - Nested rules, variables, mixins
 - **SASS**: `.sass` - Indented syntax support
 - **LESS**: `.less` - Variables, mixins, nested rules
+- **JSON**: `.json`, `.jsonc` - Object properties, configuration files, API responses
 - **Go**: `.go` - Struct definitions with field sorting
 
 ## Commands
@@ -349,6 +519,17 @@ By default, only the "Sort Properties" command appears in the right-click contex
 - Export status recognition (capitalized vs lowercase)
 - Comment association and preservation
 - Multiple struct processing in single files
+
+### JSON
+- Object property sorting with alphabetical ordering
+- Array order preservation (configurable)
+- Nested object recursive sorting
+- JSONC comment preservation (single-line and multi-line)
+- Custom key ordering for specific JSON schemas
+- Schema-based property grouping (metadata, required, optional)
+- Package.json and configuration file optimization
+- API response and data structure sorting
+- Support for both standard JSON and JSONC formats
 
 ## Known Issues
 

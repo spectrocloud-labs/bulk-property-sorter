@@ -201,29 +201,36 @@ export class GoParser extends BaseParserUtils {
      */
     private parseField(line: string, lineNumber: number, comments: PropertyComment[]): ParsedProperty | null {
         // Regex patterns for different field types:
-        // 1. Named field with tags: FieldName FieldType `tags` // comment
-        // 2. Named field without tags: FieldName FieldType // comment
-        // 3. Embedded field: EmbeddedType // comment
+        // 1. Named field with tags: FieldName FieldType `tags` // comment or /* comment */
+        // 2. Named field without tags: FieldName FieldType // comment or /* comment */
+        // 3. Embedded field: EmbeddedType // comment or /* comment */
         
         // Try named field with tags first
-        const namedWithTagsMatch = line.match(/^\s*(\w+)\s+([^`\n]+?)\s*`([^`]*)`\s*(?:\/\/(.*))?$/);
+        const namedWithTagsMatch = line.match(/^\s*(\w+)\s+([^`\n]+?)\s*`([^`]*)`\s*(?:\/\/(.*)|\s*\/\*(.*?)\*\/)?$/);
         if (namedWithTagsMatch) {
-            const [, fieldName, fieldType, structTags, inlineComment] = namedWithTagsMatch;
+            const [, fieldName, fieldType, structTags, singleLineComment, multiLineComment] = namedWithTagsMatch;
             
-            const allComments = [...comments];
-            if (inlineComment) {
-                allComments.push({
-                    text: inlineComment.trim(),
+            const trailingComments: PropertyComment[] = [];
+            if (singleLineComment) {
+                trailingComments.push({
+                    text: singleLineComment.trim(),
                     type: 'single',
-                    raw: `//${inlineComment}`,
+                    raw: `//${singleLineComment}`,
+                    line: lineNumber
+                });
+            } else if (multiLineComment) {
+                trailingComments.push({
+                    text: multiLineComment.trim(),
+                    type: 'multi',
+                    raw: `/*${multiLineComment}*/`,
                     line: lineNumber
                 });
             }
 
-            return {
+            const parsedProperty: ParsedProperty = {
                 name: fieldName.trim(),
                 value: fieldType.trim(),
-                comments: allComments,
+                comments: comments, // Leading comments
                 optional: false,
                 line: lineNumber,
                 fullText: line.trim(),
@@ -231,60 +238,95 @@ export class GoParser extends BaseParserUtils {
                 structTags: structTags.trim(),
                 isEmbedded: false
             };
+
+            // Add trailing comments if they exist
+            if (trailingComments.length > 0) {
+                parsedProperty.trailingComments = trailingComments;
+            }
+
+            return parsedProperty;
         }
 
         // Try named field without tags
-        const namedWithoutTagsMatch = line.match(/^\s*(\w+)\s+([^/\n]+?)(?:\s*\/\/(.*))?$/);
+        const namedWithoutTagsMatch = line.match(/^\s*(\w+)\s+([^/\n]+?)(?:\s*\/\/(.*)|\s*\/\*(.*?)\*\/)?$/);
         if (namedWithoutTagsMatch) {
-            const [, fieldName, fieldType, inlineComment] = namedWithoutTagsMatch;
+            const [, fieldName, fieldType, singleLineComment, multiLineComment] = namedWithoutTagsMatch;
             
-            const allComments = [...comments];
-            if (inlineComment) {
-                allComments.push({
-                    text: inlineComment.trim(),
+            const trailingComments: PropertyComment[] = [];
+            if (singleLineComment) {
+                trailingComments.push({
+                    text: singleLineComment.trim(),
                     type: 'single',
-                    raw: `//${inlineComment}`,
+                    raw: `//${singleLineComment}`,
+                    line: lineNumber
+                });
+            } else if (multiLineComment) {
+                trailingComments.push({
+                    text: multiLineComment.trim(),
+                    type: 'multi',
+                    raw: `/*${multiLineComment}*/`,
                     line: lineNumber
                 });
             }
 
-            return {
+            const parsedProperty: ParsedProperty = {
                 name: fieldName.trim(),
                 value: fieldType.trim(),
-                comments: allComments,
+                comments: comments, // Leading comments
                 optional: false,
                 line: lineNumber,
                 fullText: line.trim(),
                 trailingPunctuation: '',
                 isEmbedded: false
             };
+
+            // Add trailing comments if they exist
+            if (trailingComments.length > 0) {
+                parsedProperty.trailingComments = trailingComments;
+            }
+
+            return parsedProperty;
         }
 
         // Try embedded field (just a type name)
-        const embeddedMatch = line.match(/^\s*([A-Z]\w*(?:\.\w+)?)\s*(?:\/\/(.*))?$/);
+        const embeddedMatch = line.match(/^\s*([A-Z]\w*(?:\.\w+)?)\s*(?:\/\/(.*)|\s*\/\*(.*?)\*\/)?$/);
         if (embeddedMatch) {
-            const [, typeName, inlineComment] = embeddedMatch;
+            const [, typeName, singleLineComment, multiLineComment] = embeddedMatch;
             
-            const allComments = [...comments];
-            if (inlineComment) {
-                allComments.push({
-                    text: inlineComment.trim(),
+            const trailingComments: PropertyComment[] = [];
+            if (singleLineComment) {
+                trailingComments.push({
+                    text: singleLineComment.trim(),
                     type: 'single',
-                    raw: `//${inlineComment}`,
+                    raw: `//${singleLineComment}`,
+                    line: lineNumber
+                });
+            } else if (multiLineComment) {
+                trailingComments.push({
+                    text: multiLineComment.trim(),
+                    type: 'multi',
+                    raw: `/*${multiLineComment}*/`,
                     line: lineNumber
                 });
             }
 
-            return {
+            const parsedProperty: ParsedProperty = {
                 name: typeName.trim(),
                 value: typeName.trim(),
-                comments: allComments,
+                comments: comments, // Leading comments
                 optional: false,
                 line: lineNumber,
                 fullText: line.trim(),
                 trailingPunctuation: '',
                 isEmbedded: true
             };
+
+            // Add trailing comments if they exist
+            if (trailingComments.length > 0) {
+                parsedProperty.trailingComments = trailingComments;
+            }
+
+            return parsedProperty;
         }
 
         return null;

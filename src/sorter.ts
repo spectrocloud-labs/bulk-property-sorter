@@ -27,6 +27,14 @@ export interface SortOptions {
     groupByType?: boolean;
     /** Whether to prioritize required properties before optional ones */
     prioritizeRequired?: boolean;
+    /** JSON-specific: Whether to sort object keys alphabetically */
+    sortObjectKeys?: boolean;
+    /** JSON-specific: Whether to preserve array order instead of sorting elements */
+    preserveArrayOrder?: boolean;
+    /** JSON-specific: Custom key order list for JSON objects */
+    customKeyOrder?: string[];
+    /** JSON-specific: Group properties by common schema patterns */
+    groupBySchema?: boolean;
 }
 
 /**
@@ -71,6 +79,10 @@ export class PropertySorter {
             customOrder: [],
             groupByType: false,
             prioritizeRequired: false,
+            sortObjectKeys: true,
+            preserveArrayOrder: true,
+            customKeyOrder: [],
+            groupBySchema: false,
             ...options
         };
     }
@@ -171,7 +183,7 @@ export class PropertySorter {
                 
                 if (aTypeGroup !== bTypeGroup) {
                     // Different type groups - sort by group priority
-                    const typeGroupOrder = ['method', 'getter', 'setter', 'property'];
+                    const typeGroupOrder = ['method', 'getter', 'setter', 'property', 'json-object', 'json-array'];
                     const aGroupIndex = typeGroupOrder.indexOf(aTypeGroup);
                     const bGroupIndex = typeGroupOrder.indexOf(bTypeGroup);
                     return aGroupIndex - bGroupIndex;
@@ -581,9 +593,29 @@ export class PropertySorter {
      * Determines the type group of a property for grouping purposes
      * 
      * @param property - The property to analyze
-     * @returns The type group ('method', 'getter', 'setter', or 'property')
+     * @returns The type group ('method', 'getter', 'setter', 'property', 'json-object', 'json-array')
      */
     private getPropertyTypeGroup(property: ParsedProperty): string {
+        // JSON-specific type detection
+        if (property.value && typeof property.value === 'object') {
+            if (Array.isArray(property.value)) {
+                return 'json-array';
+            } else {
+                return 'json-object';
+            }
+        }
+        
+        // Check if it's a JSON value that looks like an object or array
+        if (property.value && typeof property.value === 'string') {
+            const trimmed = property.value.trim();
+            if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+                return 'json-object';
+            }
+            if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+                return 'json-array';
+            }
+        }
+        
         // Check if it's a method (function type or has parentheses)
         if (property.value && (
             property.value.includes('=>') || 

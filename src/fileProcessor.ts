@@ -217,7 +217,13 @@ export class FileProcessor {
             preserveStructTags: options.preserveStructTags,
             groupByVisibility: options.groupByVisibility,
             sortInterfaceMethods: options.sortInterfaceMethods,
-            preserveMethodSets: options.preserveMethodSets
+            preserveMethodSets: options.preserveMethodSets,
+            // JSON-specific options
+            sortObjectKeys: options.sortObjectKeys,
+            preserveArrayOrder: options.preserveArrayOrder,
+            customKeyOrder: options.customKeyOrder,
+            groupBySchema: options.groupBySchema,
+            preserveComments: options.preserveComments
         };
 
         return this.coreProcessor.processText(text, coreOptions);
@@ -229,7 +235,7 @@ export class FileProcessor {
      * @param document - The VS Code document to analyze
      * @returns The detected file type
      */
-    detectFileType(document: vscode.TextDocument): 'typescript' | 'javascript' | 'css' | 'scss' | 'sass' | 'less' | 'go' {
+    detectFileType(document: vscode.TextDocument): 'typescript' | 'javascript' | 'css' | 'scss' | 'sass' | 'less' | 'go' | 'json' | 'jsonc' {
         const languageId = document.languageId;
         
         switch (languageId) {
@@ -249,6 +255,10 @@ export class FileProcessor {
                 return 'less';
             case 'go':
                 return 'go';
+            case 'json':
+                return 'json';
+            case 'jsonc':
+                return 'jsonc';
             default: {
                 // Fallback to filename extension
                 const fileName = document.fileName;
@@ -264,6 +274,10 @@ export class FileProcessor {
                         return 'less';
                     case 'go':
                         return 'go';
+                    case 'json':
+                        return 'json';
+                    case 'jsonc':
+                        return 'jsonc';
                     case 'js':
                     case 'jsx':
                         return 'javascript';

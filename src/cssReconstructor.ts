@@ -184,6 +184,12 @@ export class CSSReconstructor {
             propertyDeclaration += ` ${comments}`;
         }
         
+        // Add trailing comments if enabled and present
+        if (this.options.includeComments && property.trailingComments && property.trailingComments.length > 0) {
+            const trailingCommentsText = property.trailingComments.map(c => c.raw).join(' ');
+            propertyDeclaration += ` ${trailingCommentsText}`;
+        }
+        
         return propertyDeclaration;
     }
 

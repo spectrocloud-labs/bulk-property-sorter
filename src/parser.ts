@@ -501,15 +501,23 @@ export class TypeScriptParser {
                 }
             }
 
+            const leadingComments = this.extractLeadingComments(member);
+            const trailingComments = this.extractTrailingComments(member);
+
             const parsedProperty: ParsedProperty = {
                 name,
                 value,
-                comments: this.extractLeadingComments(member),
+                comments: leadingComments,
                 optional,
                 line: this.getLineNumber(member.getStart()),
                 fullText,
                 trailingPunctuation
             };
+
+            // Add trailing comments if they exist
+            if (trailingComments.length > 0) {
+                parsedProperty.trailingComments = trailingComments;
+            }
 
             // Add nested properties if they exist
             if (hasNestedObject && nestedProperties) {
@@ -569,15 +577,23 @@ export class TypeScriptParser {
             const fullText = this.getNodeText(property);
             const trailingPunctuation = this.extractTrailingPunctuation(property);
 
+            const leadingComments = this.extractLeadingComments(property);
+            const trailingComments = this.extractTrailingComments(property);
+
             const parsedProperty: ParsedProperty = {
                 name,
                 value,
-                comments: this.extractLeadingComments(property),
+                comments: leadingComments,
                 optional: false,
                 line: this.getLineNumber(property.getStart()),
                 fullText,
                 trailingPunctuation
             };
+
+            // Add trailing comments if they exist
+            if (trailingComments.length > 0) {
+                parsedProperty.trailingComments = trailingComments;
+            }
 
             // Add nested properties if they exist
             if (hasNestedObject && nestedProperties) {
@@ -606,16 +622,26 @@ export class TypeScriptParser {
             const fullText = this.getNodeText(property);
             const trailingPunctuation = this.extractTrailingPunctuation(property);
 
-            return {
+            const leadingComments = this.extractLeadingComments(property);
+            const trailingComments = this.extractTrailingComments(property);
+
+            const parsedProperty: ParsedProperty = {
                 name: `...${expression}`,
                 value: expression,
-                comments: this.extractLeadingComments(property),
+                comments: leadingComments,
                 optional: false,
                 line: this.getLineNumber(property.getStart()),
                 fullText,
                 trailingPunctuation,
                 isSpread: true
             };
+
+            // Add trailing comments if they exist
+            if (trailingComments.length > 0) {
+                parsedProperty.trailingComments = trailingComments;
+            }
+
+            return parsedProperty;
         } catch (error) {
             return null;
         }
@@ -641,6 +667,78 @@ export class TypeScriptParser {
 
         if (leadingCommentRanges) {
             for (const range of leadingCommentRanges) {
+                const commentText = sourceFileText.substring(range.pos, range.end);
+                const isMultiLine = range.kind === ts.SyntaxKind.MultiLineCommentTrivia;
+                
+                comments.push({
+                    text: this.cleanCommentText(commentText, isMultiLine),
+                    type: isMultiLine ? 'multi' : 'single',
+                    raw: commentText,
+                    line: this.getLineNumber(range.pos)
+                });
+            }
+        }
+
+        return comments;
+    }
+
+    /**
+     * Extracts trailing comments associated with an AST node
+     * 
+     * This method finds and processes comments that appear after a node,
+     * typically on the same line as the property declaration. For object properties
+     * with trailing punctuation (like commas), it looks for comments after the
+     * punctuation rather than immediately after the node.
+     * 
+     * @param node - The AST node to extract trailing comments for
+     * @returns Array of processed comment objects
+     */
+    private extractTrailingComments(node: ts.Node): PropertyComment[] {
+        if (!this.options.includeComments || !this.sourceFile) {
+            return [];
+        }
+
+        const comments: PropertyComment[] = [];
+        const sourceFileText = this.sourceFile.getFullText();
+        
+        // First, try to get trailing comments immediately after the node
+        let searchPosition = node.getEnd();
+        let trailingCommentRanges = ts.getTrailingCommentRanges(sourceFileText, searchPosition);
+
+        // If no comments found immediately after the node, and this is an object property,
+        // look for comments after any trailing punctuation
+        if (!trailingCommentRanges && (
+            ts.isPropertyAssignment(node) || 
+            ts.isShorthandPropertyAssignment(node) || 
+            ts.isSpreadAssignment(node)
+        )) {
+            // Find the position after any trailing punctuation
+            let i = searchPosition;
+            while (i < sourceFileText.length) {
+                const char = sourceFileText.charAt(i);
+                
+                // Skip whitespace
+                if (char === ' ' || char === '\t') {
+                    i++;
+                    continue;
+                }
+                
+                // Found punctuation - update search position to after it
+                if (char === ',' || char === ';') {
+                    searchPosition = i + 1;
+                    break;
+                }
+                
+                // Found something else (like a comment or newline), stop looking
+                break;
+            }
+            
+            // Try to get trailing comments from the updated position
+            trailingCommentRanges = ts.getTrailingCommentRanges(sourceFileText, searchPosition);
+        }
+
+        if (trailingCommentRanges) {
+            for (const range of trailingCommentRanges) {
                 const commentText = sourceFileText.substring(range.pos, range.end);
                 const isMultiLine = range.kind === ts.SyntaxKind.MultiLineCommentTrivia;
                 

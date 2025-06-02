@@ -39,8 +39,10 @@ export interface ParsedProperty {
     name: string;
     /** Property type, value, or CSS property value */
     value: string;
-    /** Comments associated with this property */
+    /** Leading comments associated with this property (comments that appear before the property) */
     comments: PropertyComment[];
+    /** Trailing comments associated with this property (comments that appear after the property on the same line) */
+    trailingComments?: PropertyComment[];
     /** Whether the property is optional (has ?) - TypeScript only */
     optional: boolean;
     /** Original line number in source */
@@ -70,7 +72,7 @@ export interface ParsedProperty {
  */
 export interface ParsedEntity {
     /** Type of entity */
-    type: 'interface' | 'object' | 'type' | 'css-rule' | 'css-keyframe' | 'css-media' | 'css-at-rule' | 'struct';
+    type: 'interface' | 'object' | 'type' | 'css-rule' | 'css-keyframe' | 'css-media' | 'css-at-rule' | 'struct' | 'json-object' | 'json-array';
     /** Name of the interface/variable/selector */
     name: string;
     /** Properties within this entity */
@@ -104,7 +106,7 @@ export interface ParseResult {
     /** Original source code */
     sourceCode: string;
     /** File type that was parsed */
-    fileType: 'typescript' | 'javascript' | 'css' | 'scss' | 'sass' | 'less' | 'go';
+    fileType: 'typescript' | 'javascript' | 'css' | 'scss' | 'sass' | 'less' | 'go' | 'json' | 'jsonc';
 }
 
 /**
@@ -120,7 +122,7 @@ export interface ParserOptions {
     /** Whether to recursively sort nested object properties */
     sortNestedObjects?: boolean;
     /** File type being parsed */
-    fileType?: 'typescript' | 'javascript' | 'css' | 'scss' | 'sass' | 'less' | 'go';
+    fileType?: 'typescript' | 'javascript' | 'css' | 'scss' | 'sass' | 'less' | 'go' | 'json' | 'jsonc';
     /** CSS-specific: Whether to sort by property importance (!important first/last) */
     sortByImportance?: boolean;
     /** CSS-specific: Whether to group vendor-prefixed properties */
@@ -129,4 +131,12 @@ export interface ParserOptions {
     sortKeyframes?: boolean;
     /** CSS-specific: Whether to group properties by category before sorting alphabetically */
     groupByCategory?: boolean;
+    /** JSON-specific: Whether to sort object keys alphabetically */
+    sortObjectKeys?: boolean;
+    /** JSON-specific: Whether to preserve array order instead of sorting elements */
+    preserveArrayOrder?: boolean;
+    /** JSON-specific: Custom key order list for JSON objects */
+    customKeyOrder?: string[];
+    /** JSON-specific: Group properties by common schema patterns */
+    groupBySchema?: boolean;
 } 

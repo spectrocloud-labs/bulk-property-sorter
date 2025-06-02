@@ -3,6 +3,7 @@ import { CSSParser } from '../../src/cssParser';
 import { CSSReconstructor } from '../../src/cssReconstructor';
 import { PropertySorter } from '../../src/sorter';
 import { CoreProcessor } from '../../src/coreProcessor';
+import { ParsedEntity } from '../../src/types';
 
 suite('CSS Parser Test Suite', () => {
     let parser: CSSParser;
@@ -74,7 +75,15 @@ suite('CSS Parser Test Suite', () => {
         
         assert.strictEqual(result.errors.length, 0);
         assert.strictEqual(result.entities[0].leadingComments.length, 1);
-        assert.strictEqual(result.entities[0].properties[0].comments.length, 2);
+        
+        // Check that the color property has:
+        // 1. One leading comment (/* Primary color */)
+        // 2. One trailing comment (/* Blue theme */)
+        assert.strictEqual(result.entities[0].properties[0].comments.length, 1);
+        assert.strictEqual(result.entities[0].properties[0].comments[0].text, 'Primary color');
+        assert.ok(result.entities[0].properties[0].trailingComments, 'Property should have trailing comments');
+        assert.strictEqual(result.entities[0].properties[0].trailingComments!.length, 1);
+        assert.strictEqual(result.entities[0].properties[0].trailingComments![0].text, 'Blue theme');
     });
 
     test('Parse multiple CSS rules', () => {
@@ -267,7 +276,7 @@ suite('CSS Reconstructor Test Suite', () => {
     });
 
     test('Reconstruct simple CSS rule', () => {
-        const entity = {
+        const entity: ParsedEntity = {
             type: 'css-rule' as const,
             name: '.button',
             properties: [

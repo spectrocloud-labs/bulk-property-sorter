@@ -1,7 +1,8 @@
 import { ParsedEntity, ParsedProperty, PropertyComment } from './types';
 import { 
     calculatePropertySpacing, 
-    formatTrailingComma, 
+    formatTrailingComma,
+    formatTrailingCommaForInterface,
     getGroupSeparator,
     convertCommentStyle 
 } from './formattingUtils';
@@ -100,6 +101,13 @@ export class TypeScriptReconstructor {
 
         // Interface declaration line
         const exportKeyword = entity.isExported ? 'export ' : '';
+        
+        // Handle empty interfaces specially to preserve compact format
+        if (entity.properties.length === 0) {
+            lines.push(`${exportKeyword}interface ${entity.name} {}`);
+            return lines.join(this.options.lineEnding);
+        }
+        
         lines.push(`${exportKeyword}interface ${entity.name} {`);
 
         // Add properties with proper formatting
@@ -145,8 +153,11 @@ export class TypeScriptReconstructor {
         }
 
         // Add properties
-        for (const property of entity.properties) {
-            lines.push(...this.reconstructObjectProperty(property, this.options.indentation, false, [property.name]));
+        for (let i = 0; i < entity.properties.length; i++) {
+            const property = entity.properties[i];
+            const isLastProperty = i === entity.properties.length - 1;
+            const propertyNames = entity.properties.map(p => p.name);
+            lines.push(...this.reconstructObjectProperty(property, this.options.indentation, isLastProperty, propertyNames));
         }
 
         // Closing brace and semicolon
@@ -236,12 +247,13 @@ export class TypeScriptReconstructor {
             }
             
             // Format trailing punctuation for the closing brace
-            const formattedPunctuation = formatTrailingComma(
+            const formattedPunctuation = formatTrailingCommaForInterface(
                 { trailingCommas: this.options.trailingCommas } as any,
                 property.trailingPunctuation,
                 isLastProperty || false
             );
-            lines.push(`${indent}}${formattedPunctuation}`);
+            const trailingCommentsText = this.formatTrailingComments(property.trailingComments || []);
+            lines.push(`${indent}}${formattedPunctuation}${trailingCommentsText}`);
         } else {
             // Format property with spacing
             let propertyLine: string;
@@ -255,12 +267,16 @@ export class TypeScriptReconstructor {
             }
             
             // Format trailing punctuation
-            const formattedPunctuation = formatTrailingComma(
+            const formattedPunctuation = formatTrailingCommaForInterface(
                 { trailingCommas: this.options.trailingCommas } as any,
                 property.trailingPunctuation,
                 isLastProperty || false
             );
             propertyLine += formattedPunctuation;
+            
+            // Add trailing comments to the same line
+            const trailingCommentsText = this.formatTrailingComments(property.trailingComments || []);
+            propertyLine += trailingCommentsText;
             
             lines.push(propertyLine);
         }
@@ -286,7 +302,8 @@ export class TypeScriptReconstructor {
                 property.trailingPunctuation,
                 isLastProperty || false
             );
-            lines.push(`${indent}${property.name}${formattedPunctuation}`);
+            const trailingCommentsText = this.formatTrailingComments(property.trailingComments || []);
+            lines.push(`${indent}${property.name}${formattedPunctuation}${trailingCommentsText}`);
             return lines;
         }
 
@@ -316,7 +333,8 @@ export class TypeScriptReconstructor {
                 property.trailingPunctuation,
                 isLastProperty || false
             );
-            lines.push(`${indent}}${formattedPunctuation}`);
+            const trailingCommentsText = this.formatTrailingComments(property.trailingComments || []);
+            lines.push(`${indent}}${formattedPunctuation}${trailingCommentsText}`);
         } else {
             // Check if it's a shorthand property
             if (property.name === property.value) {
@@ -326,7 +344,8 @@ export class TypeScriptReconstructor {
                     property.trailingPunctuation,
                     isLastProperty || false
                 );
-                lines.push(`${indent}${property.name}${formattedPunctuation}`);
+                const trailingCommentsText = this.formatTrailingComments(property.trailingComments || []);
+                lines.push(`${indent}${property.name}${formattedPunctuation}${trailingCommentsText}`);
             } else {
                 // Regular property assignment with spacing
                 let propertyLine: string;
@@ -346,6 +365,10 @@ export class TypeScriptReconstructor {
                     isLastProperty || false
                 );
                 propertyLine += formattedPunctuation;
+                
+                // Add trailing comments to the same line
+                const trailingCommentsText = this.formatTrailingComments(property.trailingComments || []);
+                propertyLine += trailingCommentsText;
                 
                 lines.push(propertyLine);
             }
@@ -368,16 +391,17 @@ export class TypeScriptReconstructor {
                 if (comment.type === 'single') {
                     lines.push(`${indent}// ${comment.text}`);
                 } else {
-                    // Multi-line comment
-                    if (comment.text.includes('\n')) {
-                        // Already formatted multi-line comment
+                    // Multi-line comment - use raw format to preserve original style
+                    if (comment.raw && comment.raw.includes('\n')) {
+                        // Multi-line comment that spans multiple lines
                         const commentLines = comment.raw.split('\n');
                         lines.push(...commentLines.map(line => `${indent}${line.trim()}`));
+                    } else if (comment.raw) {
+                        // Single-line multi-line comment - use raw format
+                        lines.push(`${indent}${comment.raw}`);
                     } else {
-                        // Simple multi-line comment
-                        lines.push(`${indent}/**`);
-                        lines.push(`${indent} * ${comment.text}`);
-                        lines.push(`${indent} */`);
+                        // Fallback to formatted multi-line comment if no raw data
+                        lines.push(`${indent}/* ${comment.text} */`);
                     }
                 }
             } else {
@@ -388,6 +412,41 @@ export class TypeScriptReconstructor {
         }
 
         return lines;
+    }
+
+    /**
+     * Format trailing comments to be appended to the same line as a property
+     */
+    private formatTrailingComments(comments: PropertyComment[]): string {
+        if (!this.options.includeComments || !comments || comments.length === 0) {
+            return '';
+        }
+
+        const formattedComments: string[] = [];
+
+        for (const comment of comments) {
+            const targetStyle = this.options.commentStyle || 'preserve';
+            
+            if (targetStyle === 'preserve') {
+                // Use original comment style
+                if (comment.type === 'single') {
+                    formattedComments.push(` // ${comment.text}`);
+                } else {
+                    // For multi-line comments, use raw format if available, otherwise format as single line
+                    if (comment.raw) {
+                        formattedComments.push(` ${comment.raw}`);
+                    } else {
+                        formattedComments.push(` /* ${comment.text} */`);
+                    }
+                }
+            } else {
+                // Convert comment style
+                const convertedComment = convertCommentStyle(comment.text, comment.type, targetStyle);
+                formattedComments.push(` ${convertedComment}`);
+            }
+        }
+
+        return formattedComments.join('');
     }
 
     /**

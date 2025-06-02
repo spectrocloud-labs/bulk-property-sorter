@@ -129,7 +129,7 @@ export class ParserUtils {
      * @param fileName - The filename to analyze
      * @returns The detected file type
      */
-    static detectFileType(fileName: string): 'typescript' | 'javascript' | 'css' | 'scss' | 'sass' | 'less' | 'go' {
+    static detectFileType(fileName: string): 'typescript' | 'javascript' | 'css' | 'scss' | 'sass' | 'less' | 'go' | 'json' | 'jsonc' {
         const extension = fileName.split('.').pop()?.toLowerCase();
         switch (extension) {
             case 'js':
@@ -148,6 +148,10 @@ export class ParserUtils {
                 return 'css';
             case 'go':
                 return 'go';
+            case 'json':
+                return 'json';
+            case 'jsonc':
+                return 'jsonc';
             default:
                 return 'typescript'; // Default fallback
         }

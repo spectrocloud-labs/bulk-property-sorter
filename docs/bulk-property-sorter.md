@@ -14,8 +14,9 @@
   - [5. TypeScript Parser (`parser.ts`)](#5-typescript-parser-parserts)
   - [6. CSS Parser (`cssParser.ts`)](#6-css-parser-cssparsersts)
   - [7. Go Parser (`goParser.ts`)](#7-go-parser-goparsersts)
-  - [8. Property Sorter (`sorter.ts`)](#8-property-sorter-sorterts)
-  - [9. Reconstructors](#9-reconstructors)
+  - [8. JSON Parser (`jsonParser.ts`)](#8-json-parser-jsonparsersts)
+  - [9. Property Sorter (`sorter.ts`)](#9-property-sorter-sorterts)
+  - [10. Reconstructors](#10-reconstructors)
 - [Data Structures](#data-structures)
   - [Core Types](#core-types)
 - [Processing Pipeline](#processing-pipeline)
@@ -31,12 +32,13 @@
 - [Language Support](#language-support)
   - [TypeScript/JavaScript Support](#typescriptjavascript-support)
   - [CSS/SCSS/SASS/LESS Support](#cssscssassless-support)
+  - [JSON/JSONC Support](#jsonjsonc-support)
   - [Go Language Support](#go-language-support)
 - [Recent Improvements (Version 0.4.6)](#recent-improvements-version-046)
 
 ## Overview
 
-The Bulk Property Sorter is a VS Code extension that provides intelligent property sorting for TypeScript/JavaScript interfaces, type aliases, object literals, CSS/SCSS/SASS/LESS stylesheets, and Go struct definitions. It preserves comments, handles nested objects and CSS rules, maintains code formatting, preserves original trailing punctuation styles (semicolons, commas, or none), and supports object spread syntax while sorting properties alphabetically or in reverse order.
+The Bulk Property Sorter is a VS Code extension that provides intelligent property sorting for TypeScript/JavaScript interfaces, type aliases, object literals, CSS/SCSS/SASS/LESS stylesheets, JSON/JSONC files, and Go struct definitions. It preserves comments, handles nested objects and CSS rules, maintains code formatting, preserves original trailing punctuation styles (semicolons, commas, or none), and supports object spread syntax while sorting properties alphabetically or in reverse order.
 
 ### Supported File Types
 
@@ -45,6 +47,8 @@ The Bulk Property Sorter is a VS Code extension that provides intelligent proper
 - **SCSS**: Nested rules, parent selectors, mixins, variables
 - **SASS**: Indented syntax support without braces and semicolons
 - **LESS**: Variables, mixins, nested rules, property declarations
+- **JSON**: Object properties, configuration files, API responses, package.json
+- **JSONC**: JSON with Comments for configuration files like VS Code settings
 - **Go**: Struct definitions with field sorting and tag preservation, and much more
 
 ## Architecture Overview
@@ -75,42 +79,52 @@ graph TB
         F --> K[Go Reconstructor<br/>goReconstructor.ts]
     end
     
-    subgraph "Data Structures & Utilities"
-        L[Types<br/>types.ts]
-        M[Parser Utils<br/>parserUtils.ts]
-        N[Formatting Utils<br/>formattingUtils.ts]
-        O[File Pattern Filter<br/>filePatternFilter.ts]
+    subgraph "JSON Processing Pipeline"
+        D --> L[JSON Parser<br/>jsonParser.ts]
+        L --> F
+        F --> M[JSON Reconstructor<br/>jsonReconstructor.ts]
     end
     
-    E -.-> L
-    H -.-> L
-    J -.-> L
-    F -.-> L
-    G -.-> L
-    I -.-> L
-    K -.-> L
+    subgraph "Data Structures & Utilities"
+        N[Types<br/>types.ts]
+        O[Parser Utils<br/>parserUtils.ts]
+        P[Formatting Utils<br/>formattingUtils.ts]
+        Q[File Pattern Filter<br/>filePatternFilter.ts]
+    end
     
-    E -.-> M
-    H -.-> M
-    J -.-> M
-    
+    E -.-> N
+    H -.-> N
+    J -.-> N
+    L -.-> N
+    F -.-> N
     G -.-> N
     I -.-> N
     K -.-> N
+    M -.-> N
     
-    B -.-> O
+    E -.-> O
+    H -.-> O
+    J -.-> O
+    L -.-> O
+    
+    G -.-> P
+    I -.-> P
+    K -.-> P
+    M -.-> P
+    
+    B -.-> Q
     
     subgraph "VS Code Integration"
-        P[Commands]
-        Q[Configuration]
-        R[Context Menus]
-        S[Keybindings]
+        R[Commands]
+        S[Configuration]
+        T[Context Menus]
+        U[Keybindings]
     end
     
-    A --> P
-    A --> Q
     A --> R
     A --> S
+    A --> T
+    A --> U
     
     style A stroke:#e1f5fe
     style C stroke:#e8f5e8
@@ -231,19 +245,23 @@ graph TB
     
     B -->|.ts,.tsx,.js,.jsx| C[TypeScript/JavaScript Processor]
     B -->|.css,.scss,.sass,.less| D[CSS Processor]
-    B -->|.go| E[Go Processor]
+    B -->|.json,.jsonc| E[JSON Processor]
+    B -->|.go| F[Go Processor]
     
-    C --> F[TypeScript Parser]
-    D --> G[CSS Parser]
-    E --> H[Go Parser]
+    C --> G[TypeScript Parser]
+    D --> H[CSS Parser]
+    E --> I[JSON Parser]
+    F --> J[Go Parser]
     
-    F --> I[Common Sorter]
-    G --> I
-    H --> I
+    G --> K[Common Sorter]
+    H --> K
+    I --> K
+    J --> K
     
-    I --> J[TypeScript Reconstructor]
-    I --> K[CSS Reconstructor]
-    I --> L[Go Reconstructor]
+    K --> L[TypeScript Reconstructor]
+    K --> M[CSS Reconstructor]
+    K --> N[JSON Reconstructor]
+    K --> O[Go Reconstructor]
 ```
 
 ### 5. TypeScript Parser (`parser.ts`)
@@ -363,7 +381,29 @@ graph TB
     I --> J[ParsedEntity]
 ```
 
-### 8. Property Sorter (`sorter.ts`)
+### 8. JSON Parser (`jsonParser.ts`)
+
+Parses JSON and JSONC files with comment preservation:
+
+```mermaid
+graph TB
+    A[JSON/JSONC Source] --> B{File Type Detection}
+    
+    B -->|.json| C[Standard JSON Parsing]
+    B -->|.jsonc| D[JSONC with Comments]
+    
+    C --> E[Extract JSON Objects]
+    D --> F[Extract Comments]
+    F --> E
+    
+    E --> G[Parse Object Properties]
+    G --> H[Handle Array Elements]
+    H --> I[Process Nested Objects]
+    I --> J[Associate Comments]
+    J --> K[ParsedEntity]
+```
+
+### 9. Property Sorter (`sorter.ts`)
 
 Implements the sorting algorithm with various options:
 
@@ -399,7 +439,7 @@ graph TB
     style P stroke:#f3e5f5
 ```
 
-### 9. Reconstructors
+### 10. Reconstructors
 
 Language-specific reconstructors rebuild code from sorted entities:
 
@@ -498,31 +538,35 @@ flowchart TD
     
     W -->|TypeScript/JS| X[TypeScript Parser]
     W -->|CSS Variants| Y[CSS Parser]
-    W -->|Go| Z[Go Parser]
+    W -->|JSON/JSONC| Z[JSON Parser]
+    W -->|Go| AA[Go Parser]
     
-    X --> AA[PropertySorter.sortProperties]
-    Y --> AA
-    Z --> AA
+    X --> BB[PropertySorter.sortProperties]
+    Y --> BB
+    Z --> BB
+    AA --> BB
     
-    AA --> BB{Language Type}
-    BB -->|TypeScript/JS| CC[TypeScript Reconstructor]
-    BB -->|CSS Variants| DD[CSS Reconstructor]
-    BB -->|Go| EE[Go Reconstructor]
+    BB --> CC{Language Type}
+    CC -->|TypeScript/JS| DD[TypeScript Reconstructor]
+    CC -->|CSS Variants| EE[CSS Reconstructor]
+    CC -->|JSON/JSONC| FF[JSON Reconstructor]
+    CC -->|Go| GG[Go Reconstructor]
     
-    CC --> FF[Return ProcessingResult]
-    DD --> FF
-    EE --> FF
+    DD --> HH[Return ProcessingResult]
+    EE --> HH
+    FF --> HH
+    GG --> HH
     
-    FF --> GG{Success?}
-    GG -->|No| HH[Show Error Message]
-    GG -->|Yes| II[Apply Changes to Editor]
+    HH --> II{Success?}
+    II -->|No| JJ[Show Error Message]
+    II -->|Yes| KK[Apply Changes to Editor]
     
-    II --> JJ[Show Success Message]
+    KK --> LL[Show Success Message]
     
     style E stroke:#e1f5fe
     style V stroke:#f3e5f5
     style AA stroke:#fff3e0
-    style FF stroke:#e8f5e8
+    style HH stroke:#e8f5e8
 ```
 
 ### Nested Object Processing
@@ -565,7 +609,8 @@ graph LR
     B --> E[TypeScript Options]
     B --> F[CSS/SCSS/SASS/LESS Options]
     B --> G[Go Options]
-    B --> H[Formatting Options]
+    B --> H[JSON Options]
+    B --> I[Formatting Options]
     
     C --> C1[excludedLanguages]
     C --> C2[sortNestedObjects]
@@ -603,14 +648,21 @@ graph LR
     G --> G6[sortInterfaceMethods]
     G --> G7[preserveMethodSets]
     
-    H --> H1[indentationType]
-    H --> H2[indentationSize]
-    H --> H3[lineEnding]
-    H --> H4[preserveComments]
-    H --> H5[commentStyle]
-    H --> H6[propertySpacing]
-    H --> H7[trailingCommas]
-    H --> H8[blankLinesBetweenGroups]
+    H --> H1[sortObjectKeys]
+    H --> H2[preserveArrayOrder]
+    H --> H3[sortNestedObjects]
+    H --> H4[customKeyOrder]
+    H --> H5[groupBySchema]
+    H --> H6[preserveComments]
+    
+    I --> I1[indentationType]
+    I --> I2[indentationSize]
+    I --> I3[lineEnding]
+    I --> I4[preserveComments]
+    I --> I5[commentStyle]
+    I --> I6[propertySpacing]
+    I --> I7[trailingCommas]
+    I --> I8[blankLinesBetweenGroups]
     
     style C stroke:#e1f5fe
     style D stroke:#e8f5e8
@@ -618,6 +670,7 @@ graph LR
     style F stroke:#f3e5f5
     style G stroke:#e0f2f1
     style H stroke:#fce4ec
+    style I stroke:#e0f2f1
 ```
 
 #### General Options
@@ -676,6 +729,14 @@ graph LR
 - **`go.sortInterfaceMethods`** (`boolean`, default: `true`): Sort method signatures alphabetically within interfaces
 - **`go.preserveMethodSets`** (`boolean`, default: `false`): Keep related methods together based on functionality
 
+#### JSON Options
+
+- **`json.sortObjectKeys`** (`boolean`, default: `true`): Sort object keys alphabetically
+- **`json.preserveArrayOrder`** (`boolean`, default: `true`): Preserve the original order of array elements
+- **`json.sortNestedObjects`** (`boolean`, default: `true`): Sort nested objects
+- **`json.customKeyOrder`** (`string[]`, default: `[]`): Custom key order for JSON objects
+- **`json.groupBySchema`** (`boolean`, default: `false`): Group JSON objects by their schema
+
 #### Formatting Options
 
 - **`formatting.indentationType`** (`string`, default: `"auto"`): Indentation type to use
@@ -701,6 +762,29 @@ graph LR
   - `"add"`: Ensure trailing commas
   - `"remove"`: Remove trailing commas
 - **`formatting.blankLinesBetweenGroups`** (`boolean`, default: `false`): Add blank lines between property groups
+
+### Configuration Flow
+
+```mermaid
+graph TB
+    A[VS Code Settings] --> B[Extension Activation]
+    B --> C[Get Configuration]
+    C --> D[Merge with Defaults]
+    D --> E[Apply Language Exclusions]
+    E --> F[Process File Patterns]
+    F --> G[Pass to Language Processors]
+    
+    G --> H{File Type}
+    H -->|TypeScript/JS| I[TypeScript Options]
+    H -->|CSS/SCSS/SASS/LESS| J[CSS Options]
+    H -->|JSON/JSONC| K[JSON Options]
+    H -->|Go| L[Go Options]
+    
+    I --> M[Apply to Parser/Sorter]
+    J --> M
+    K --> M
+    L --> M
+```
 
 ## Command System
 
@@ -730,3 +814,143 @@ graph TB
     style C stroke:#e1f5fe
     style H stroke:#fff3e0
 ```
+
+## Language Support
+
+### TypeScript/JavaScript Support
+
+Comprehensive support for TypeScript and JavaScript files with intelligent parsing:
+
+**Supported Constructs:**
+- Interface declarations (`interface User { ... }`)
+- Type alias declarations (`type Config = { ... }`)
+- Object literal assignments (`const config = { ... }`)
+- Function call objects (`createStyle({ ... })`)
+- Class property definitions
+- Method signatures in interfaces
+- Optional properties (`property?: type`)
+- Readonly properties (`readonly property: type`)
+
+**Features:**
+- **Comment Preservation**: Maintains JSDoc comments, inline comments, and block comments
+- **Optional Property Handling**: Preserves optional markers during sorting
+- **Method Recognition**: Distinguishes between properties and methods in interfaces
+- **Export Detection**: Handles exported interfaces and type aliases correctly
+- **Nested Object Sorting**: Recursively sorts properties in nested object types
+- **Spread Syntax Preservation**: Maintains object spread operations in their original positions
+- **Semicolon Preservation**: Maintains original trailing punctuation styles
+
+### CSS/SCSS/SASS/LESS Support
+
+Advanced CSS processing with format-specific optimizations:
+
+**Supported Constructs:**
+- CSS property declarations
+- CSS rules and selectors
+- Media queries (`@media`)
+- Keyframe animations (`@keyframes`)
+- CSS custom properties (variables)
+- Vendor-prefixed properties
+- SCSS/SASS nested rules
+- LESS variables and mixins
+- CSS imports and at-rules
+
+**Features:**
+- **Format Awareness**: Respects syntax differences between CSS, SCSS, SASS (indented), and LESS
+- **Vendor Prefix Intelligence**: Groups and orders vendor prefixes correctly
+- **Nested Rule Support**: Handles SCSS/SASS nested selectors and parent references (`&`)
+- **Comment Preservation**: Maintains CSS comments with their associated properties
+- **Property Grouping**: Optional grouping by category (layout, typography, etc.)
+- **Media Query Handling**: Preserves media query order while sorting internal properties
+- **Variable Grouping**: Groups CSS custom properties at rule beginnings
+
+### JSON/JSONC Support
+
+Complete support for JSON and JSON with Comments (JSONC) files:
+
+**Supported Constructs:**
+- JSON object properties
+- Nested JSON objects and arrays
+- JSON arrays (with configurable element handling)
+- JSONC single-line comments (`//`)
+- JSONC multi-line comments (`/* */`)
+- Complex nested structures
+- Configuration files (package.json, tsconfig.json, etc.)
+- API response structures
+
+**Features:**
+- **Comment Preservation**: Maintains both single-line and multi-line comments in JSONC files
+- **Array Order Options**: Configurable array element preservation or sorting
+- **Nested Object Sorting**: Recursive sorting of deeply nested JSON structures
+- **Custom Key Ordering**: Support for schema-specific key ordering (e.g., package.json optimization)
+- **Schema-Based Grouping**: Groups properties by common patterns (metadata, required, optional)
+- **Format Detection**: Automatic detection of JSON vs JSONC based on content
+- **Configuration File Optimization**: Special handling for common config files
+- **API Response Sorting**: Optimized sorting for API response structures
+
+**JSON Processing Pipeline:**
+
+```mermaid
+graph TB
+    A[JSON/JSONC File] --> B{File Type Detection}
+    
+    B -->|Standard JSON| C[JSON Parser]
+    B -->|JSONC| D[Comment Extraction]
+    
+    C --> E[Object Property Extraction]
+    D --> F[Comment Processing]
+    F --> E
+    
+    E --> G[Property Sorting]
+    G --> H[Array Handling]
+    H --> I[Nested Object Processing]
+    I --> J[Comment Association]
+    J --> K[JSON Reconstruction]
+    
+    style D stroke:#e8f5e8
+    style F stroke:#fff3e0
+    style J stroke:#f3e5f5
+```
+
+**Configuration Examples:**
+
+```json
+// Basic object key sorting
+{
+    "json.sortObjectKeys": true,
+    "json.preserveArrayOrder": true
+}
+
+// Custom key ordering for package.json
+{
+    "json.customKeyOrder": ["name", "version", "description", "main", "scripts"]
+}
+
+// Schema-based grouping
+{
+    "json.groupBySchema": true,
+    "json.sortNestedObjects": true
+}
+```
+
+### Go Language Support
+
+Full support for Go source code with struct-focused processing:
+
+**Supported Constructs:**
+- Struct type definitions (`type User struct { ... }`)
+- Named struct fields with types
+- Embedded/anonymous fields
+- Struct tags with backticks
+- Single-line comments (`// comment`)
+- Multi-line comments (`/* comment */`)
+- Exported and unexported identifiers
+- Complex struct tag formats
+
+**Features:**
+- **Struct Tag Preservation**: Maintains exact formatting of struct tags with multiple key-value pairs
+- **Embedded Field Support**: Proper handling of anonymous fields in struct definitions
+- **Export Status Recognition**: Distinguishes between exported (capitalized) and unexported fields
+- **Comment Association**: Maintains field-specific comments during sorting
+- **Multiple Struct Processing**: Handles multiple struct definitions in single files
+- **Tag Format Intelligence**: Preserves complex tag structures like `json:"name" validate:"required,email"`

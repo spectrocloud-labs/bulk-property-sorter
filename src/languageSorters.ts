@@ -79,12 +79,47 @@ export interface GoSortOptions {
 }
 
 /**
+ * Language-specific sorting options for JSON
+ */
+export interface JSONSortOptions {
+    /** Sort order: ascending (A-Z) or descending (Z-A) */
+    sortOrder?: 'asc' | 'desc';
+    /** Whether to recursively sort nested object properties */
+    sortNestedObjects?: boolean;
+    /** Whether to preserve original formatting and whitespace */
+    preserveFormatting?: boolean;
+    /** Whether to include comments in the reconstructed output */
+    includeComments?: boolean;
+    /** Indentation string to use (spaces or tabs) */
+    indentation?: string;
+    /** Line ending style to use */
+    lineEnding?: string;
+    /** Comment style preference */
+    commentStyle?: 'preserve' | 'single-line' | 'multi-line';
+    /** Property spacing style */
+    propertySpacing?: 'compact' | 'spaced' | 'aligned';
+    /** Trailing comma handling */
+    trailingCommas?: 'preserve' | 'add' | 'remove';
+    /** Add blank lines between property groups */
+    blankLinesBetweenGroups?: boolean;
+    /** Whether to sort object keys alphabetically */
+    sortObjectKeys?: boolean;
+    /** Whether to preserve array order instead of sorting elements */
+    preserveArrayOrder?: boolean;
+    /** Custom key order list for JSON objects */
+    customKeyOrder?: string[];
+    /** Group properties by common schema patterns */
+    groupBySchema?: boolean;
+}
+
+/**
  * Combined language-specific sorting options
  */
 export interface LanguageSortOptions {
     typescript?: TypeScriptSortOptions;
     css?: CSSSortOptions;
     go?: GoSortOptions;
+    json?: JSONSortOptions;
 }
 
 /**
@@ -170,7 +205,7 @@ export class TypeScriptPropertySorter {
     }
 
     /**
-     * Sort object properties with TypeScript-specific rules
+     * Sort object properties
      */
     private sortObjectProperties(properties: ParsedProperty[]): ParsedProperty[] {
         let sorted = [...properties];
@@ -960,12 +995,253 @@ export class GoPropertySorter {
 }
 
 /**
+ * JSON-specific property sorter
+ */
+export class JSONPropertySorter {
+    private options: JSONSortOptions;
+
+    constructor(options: JSONSortOptions = {}) {
+        this.options = {
+            sortOrder: 'asc',
+            sortNestedObjects: false,
+            preserveFormatting: true,
+            includeComments: true,
+            indentation: '  ',
+            lineEnding: '\n',
+            commentStyle: 'preserve',
+            propertySpacing: 'spaced',
+            trailingCommas: 'preserve',
+            blankLinesBetweenGroups: false,
+            sortObjectKeys: true,
+            preserveArrayOrder: true,
+            customKeyOrder: [],
+            groupBySchema: false,
+            ...options
+        };
+    }
+
+    /**
+     * Sort properties with JSON-specific logic
+     */
+    public sortProperties(properties: ParsedProperty[], entity?: ParsedEntity): ParsedProperty[] {
+        if (!properties || properties.length === 0) {
+            return properties;
+        }
+
+        // Create a copy to avoid mutating the original array
+        let sortedProperties = [...properties];
+
+        // Apply JSON-specific sorting based on entity type
+        if (entity) {
+            switch (entity.type) {
+                case 'json-object':
+                    sortedProperties = this.sortObjectProperties(sortedProperties);
+                    break;
+                case 'json-array':
+                    sortedProperties = this.sortArrayProperties(sortedProperties);
+                    break;
+                default:
+                    sortedProperties = this.sortGenericProperties(sortedProperties);
+            }
+        } else {
+            sortedProperties = this.sortGenericProperties(sortedProperties);
+        }
+
+        // Handle nested object sorting if enabled
+        if (this.options.sortNestedObjects) {
+            sortedProperties = this.sortNestedProperties(sortedProperties);
+        }
+
+        return sortedProperties;
+    }
+
+    /**
+     * Sort JSON object properties with custom key order and schema grouping
+     */
+    private sortObjectProperties(properties: ParsedProperty[]): ParsedProperty[] {
+        if (!this.options.sortObjectKeys) {
+            return properties;
+        }
+
+        const sorted = [...properties];
+
+        // Apply custom key order if specified (and return early)
+        if (this.options.customKeyOrder && this.options.customKeyOrder.length > 0) {
+            return this.applyCustomKeyOrder(sorted);
+        }
+
+        // Group by schema patterns if enabled
+        if (this.options.groupBySchema) {
+            return this.groupBySchema(sorted);
+        }
+
+        // Sort alphabetically as fallback
+        return this.sortAlphabetically(sorted);
+    }
+
+    /**
+     * Sort JSON array properties (preserve order by default)
+     */
+    private sortArrayProperties(properties: ParsedProperty[]): ParsedProperty[] {
+        if (this.options.preserveArrayOrder) {
+            return properties; // Keep original order
+        }
+
+        // Sort array elements alphabetically if preserve order is disabled
+        return this.sortAlphabetically([...properties]);
+    }
+
+    /**
+     * Apply custom key order to properties
+     */
+    private applyCustomKeyOrder(properties: ParsedProperty[]): ParsedProperty[] {
+        const customOrder = this.options.customKeyOrder || [];
+        const ordered: ParsedProperty[] = [];
+        const remaining: ParsedProperty[] = [];
+
+        // First, add properties in custom order
+        customOrder.forEach(key => {
+            const prop = properties.find(p => p.name === key);
+            if (prop) {
+                ordered.push(prop);
+            }
+        });
+
+        // Then add remaining properties alphabetically
+        properties.forEach(prop => {
+            if (!customOrder.includes(prop.name)) {
+                remaining.push(prop);
+            }
+        });
+
+        // Sort remaining properties alphabetically
+        remaining.sort((a, b) => {
+            const comparison = a.name.localeCompare(b.name);
+            return this.options.sortOrder === 'desc' ? -comparison : comparison;
+        });
+
+        return [...ordered, ...remaining];
+    }
+
+    /**
+     * Group properties by common JSON schema patterns
+     */
+    private groupBySchema(properties: ParsedProperty[]): ParsedProperty[] {
+        const groups = {
+            metadata: [] as ParsedProperty[], // id, type, version, etc.
+            required: [] as ParsedProperty[], // name, title, required fields
+            optional: [] as ParsedProperty[], // description, optional fields
+            nested: [] as ParsedProperty[],   // objects and arrays
+            other: [] as ParsedProperty[]     // everything else
+        };
+
+        // Common metadata keys
+        const metadataKeys = ['id', 'type', 'version', '$schema', '$id', '$ref'];
+        // Common required keys
+        const requiredKeys = ['name', 'title', 'required', 'properties'];
+        // Common optional keys
+        const optionalKeys = ['description', 'default', 'example', 'examples'];
+
+        properties.forEach(prop => {
+            if (metadataKeys.includes(prop.name)) {
+                groups.metadata.push(prop);
+            } else if (requiredKeys.includes(prop.name)) {
+                groups.required.push(prop);
+            } else if (optionalKeys.includes(prop.name)) {
+                groups.optional.push(prop);
+            } else if (prop.hasNestedObject || this.isComplexValue(prop.value)) {
+                groups.nested.push(prop);
+            } else {
+                groups.other.push(prop);
+            }
+        });
+
+        // Sort each group alphabetically
+        Object.values(groups).forEach(group => {
+            group.sort((a, b) => {
+                const comparison = a.name.localeCompare(b.name);
+                return this.options.sortOrder === 'desc' ? -comparison : comparison;
+            });
+        });
+
+        return [
+            ...groups.metadata,
+            ...groups.required,
+            ...groups.optional,
+            ...groups.nested,
+            ...groups.other
+        ];
+    }
+
+    /**
+     * Check if a value is complex (object or array)
+     */
+    private isComplexValue(value: any): boolean {
+        if (typeof value === 'string') {
+            try {
+                const parsed = JSON.parse(value);
+                return typeof parsed === 'object' && parsed !== null;
+            } catch {
+                return false;
+            }
+        }
+        return typeof value === 'object' && value !== null;
+    }
+
+    /**
+     * Sort properties alphabetically
+     */
+    private sortAlphabetically(properties: ParsedProperty[]): ParsedProperty[] {
+        return properties.sort((a, b) => {
+            const comparison = a.name.localeCompare(b.name);
+            return this.options.sortOrder === 'desc' ? -comparison : comparison;
+        });
+    }
+
+    /**
+     * Sort nested properties recursively
+     */
+    private sortNestedProperties(properties: ParsedProperty[]): ParsedProperty[] {
+        return properties.map(prop => {
+            if (prop.nestedProperties && prop.nestedProperties.length > 0) {
+                return {
+                    ...prop,
+                    nestedProperties: this.sortProperties(prop.nestedProperties)
+                };
+            }
+            return prop;
+        });
+    }
+
+    /**
+     * Sort generic properties (fallback)
+     */
+    private sortGenericProperties(properties: ParsedProperty[]): ParsedProperty[] {
+        return this.sortAlphabetically([...properties]);
+    }
+
+    /**
+     * Update sorting options
+     */
+    public updateOptions(newOptions: Partial<JSONSortOptions>): void {
+        this.options = { ...this.options, ...newOptions };
+    }
+
+    /**
+     * Get current sorting options
+     */
+    public getOptions(): JSONSortOptions {
+        return { ...this.options };
+    }
+}
+
+/**
  * Factory function to create language-specific sorters
  */
 export function createLanguageSorter(
-    language: 'typescript' | 'css' | 'go',
+    language: 'typescript' | 'css' | 'go' | 'json',
     options: LanguageSortOptions = {}
-): TypeScriptPropertySorter | CSSPropertySorter | GoPropertySorter {
+): TypeScriptPropertySorter | CSSPropertySorter | GoPropertySorter | JSONPropertySorter {
     switch (language) {
         case 'typescript':
             return new TypeScriptPropertySorter(options.typescript);
@@ -973,6 +1249,8 @@ export function createLanguageSorter(
             return new CSSPropertySorter(options.css);
         case 'go':
             return new GoPropertySorter(options.go);
+        case 'json':
+            return new JSONPropertySorter(options.json);
         default:
             throw new Error(`Unsupported language: ${language}`);
     }

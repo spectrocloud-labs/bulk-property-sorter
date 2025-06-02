@@ -1,0 +1,817 @@
+
+> bulk-property-sorter@0.5.1 pretest
+> npm run compile && npm run lint
+
+
+> bulk-property-sorter@0.5.1 compile
+> tsc -p ./
+
+
+> bulk-property-sorter@0.5.1 lint
+> eslint src --ext ts
+
+
+/Users/robertparker/_work/bulk-property-sorter/src/jsonParser.ts
+  209:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  248:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  299:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  345:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  345:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  360:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/robertparker/_work/bulk-property-sorter/src/jsonReconstructor.ts
+  188:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  211:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  229:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/robertparker/_work/bulk-property-sorter/src/languageSorters.ts
+  1179:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/robertparker/_work/bulk-property-sorter/src/reconstructor.ts
+  186:90  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  220:66  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  240:68  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  259:68  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  285:68  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  295:66  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  315:68  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  325:72  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  344:72  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+✖ 19 problems (0 errors, 19 warnings)
+
+
+> bulk-property-sorter@0.5.1 test
+> node ./out/test/runTest.js
+
+
+[0m[0m
+[0m  TypeScript-Specific Features Test Suite[0m
+[0m    Method Chaining Preservation Tests[0m
+    [32m  ✔[0m[90m Preserve method chaining when enabled[0m
+    [32m  ✔[0m[90m Sort all properties when method chaining preservation is disabled[0m
+    [32m  ✔[0m[90m Detect various method chaining patterns[0m
+    [32m  ✔[0m[90m Handle edge cases in method chaining detection[0m
+[0m    Integration Tests with CoreProcessor[0m
+    [32m  ✔[0m[90m Method chaining preservation works end-to-end through CoreProcessor[0m
+    [32m  ✔[0m[90m Method chaining preservation can be disabled through CoreProcessor[0m
+[0m    TypeScript Sorting Options Tests[0m
+    [32m  ✔[0m[90m Update sorting options[0m
+    [32m  ✔[0m[90m Get current options[0m
+
+[0m  Spread Syntax Test Suite[0m
+[0m    Object Spread Parsing[0m
+    [32m  ✔[0m[90m Parse object with single spread at beginning[0m
+    [32m  ✔[0m[90m Parse object with single spread at end[0m
+    [32m  ✔[0m[90m Parse object with multiple spreads[0m
+    [32m  ✔[0m[90m Parse object with only spread properties[0m
+    [32m  ✔[0m[90m Parse object with complex spread expressions[0m
+[0m    Nested Object Spread Parsing[0m
+    [32m  ✔[0m[90m Parse nested object with spread[0m
+[0m    Function Call Object Spread Parsing[0m
+    [32m  ✔[0m[90m Parse function call with spread in object argument[0m
+[0m    Spread Syntax Sorting[0m
+    [32m  ✔[0m[90m Sort object with spread at beginning (spread should stay in place)[0m
+    [32m  ✔[0m[90m Sort object with spread at end (spread should stay in place)[0m
+    [32m  ✔[0m[90m Sort object with multiple spreads (spreads should maintain relative positions)[0m
+    [32m  ✔[0m[90m Sort object with only spread properties (order should be preserved)[0m
+[0m    Spread Syntax Reconstruction[0m
+    [32m  ✔[0m[90m Reconstruct object with spread properties[0m
+    [32m  ✔[0m[90m Reconstruct object with trailing commas preserved[0m
+[0m    Edge Cases[0m
+    [32m  ✔[0m[90m Parse empty object (should not crash)[0m
+    [32m  ✔[0m[90m Parse object with spread and comments[0m
+
+[0m  PropertySorter Test Suite[0m
+[0m    Constructor and Options[0m
+    [32m  ✔[0m[90m Should initialize with default options[0m
+    [32m  ✔[0m[90m Should initialize with custom options[0m
+    [32m  ✔[0m[90m Should merge options correctly[0m
+[0m    Basic Property Sorting[0m
+    [32m  ✔[0m[90m Should sort properties in ascending order[0m
+    [32m  ✔[0m[90m Should sort properties in descending order[0m
+    [32m  ✔[0m[90m Should handle case-insensitive sorting (default)[0m
+    [32m  ✔[0m[90m Should handle case-sensitive sorting[0m
+    [32m  ✔[0m[90m Should preserve original array and return new array[0m
+[0m    Numeric Property Sorting[0m
+    [32m  ✔[0m[90m Should sort numeric properties numerically[0m
+    [32m  ✔[0m[90m Should sort quoted numeric properties numerically[0m
+    [32m  ✔[0m[90m Should sort decimal numbers correctly[0m
+    [32m  ✔[0m[90m Should sort negative numbers correctly[0m
+    [32m  ✔[0m[90m Should put numeric properties before alphabetic properties[0m
+[0m    Custom Order Sorting[0m
+    [32m  ✔[0m[90m Should prioritize custom order properties[0m
+    [32m  ✔[0m[90m Should sort custom order properties by their position in custom order list[0m
+    [32m  ✔[0m[90m Should handle partial custom order with other properties[0m
+[0m    Required Property Prioritization[0m
+    [32m  ✔[0m[90m Should prioritize required properties over optional ones[0m
+    [32m  ✔[0m[90m Should sort within required and optional groups[0m
+[0m    Type Grouping[0m
+    [32m  ✔[0m[90m Should group properties by type[0m
+    [32m  ✔[0m[90m Should sort within type groups alphabetically[0m
+[0m    CSS-Specific Sorting[0m
+    [32m  ✔[0m[90m Should sort by importance when sortByImportance is enabled[0m
+    [32m  ✔[0m[90m Should sort by importance in descending order[0m
+    [32m  ✔[0m[90m Should group vendor prefixes when groupVendorPrefixes is enabled[0m
+[0m    Natural Sort[0m
+    [32m  ✔[0m[90m Should sort with natural ordering when naturalSort is enabled[0m
+    [32m  ✔[0m[90m Should handle natural sort with mixed content[0m
+[0m    Spread Properties[0m
+    [32m  ✔[0m[90m Should preserve spread properties in their original positions[0m
+    [32m  ✔[0m[90m Should handle only spread properties[0m
+[0m    Nested Object Sorting[0m
+    [32m  ✔[0m[90m Should recursively sort nested properties when sortNestedObjects is enabled[0m
+    [32m  ✔[0m[90m Should not sort nested properties when sortNestedObjects is disabled[0m
+    [32m  ✔[0m[90m Should handle deeply nested properties[0m
+[0m    Entity and Multiple Entity Sorting[0m
+    [32m  ✔[0m[90m Should sort entity properties[0m
+    [32m  ✔[0m[90m Should sort multiple entities[0m
+    [32m  ✔[0m[90m Should apply custom options to entity sorting[0m
+[0m    Preview and Utility Functions[0m
+    [32m  ✔[0m[90m Should preview sort results[0m
+    [32m  ✔[0m[90m Should detect when no changes would occur[0m
+    [32m  ✔[0m[90m Should check if sorting would change order[0m
+    [32m  ✔[0m[90m Should check order changes with custom options[0m
+[0m    Options Management[0m
+    [32m  ✔[0m[90m Should update options correctly[0m
+    [32m  ✔[0m[90m Should return copy of options from getOptions[0m
+[0m    Edge Cases and Error Handling[0m
+    [32m  ✔[0m[90m Should handle empty property array[0m
+    [32m  ✔[0m[90m Should handle single property[0m
+    [32m  ✔[0m[90m Should handle properties with same names[0m
+    [32m  ✔[0m[90m Should handle properties with special characters[0m
+    [32m  ✔[0m[90m Should handle quoted properties with escape characters[0m
+    [32m  ✔[0m[90m Should handle malformed numeric properties[0m
+    [32m  ✔[0m[90m Should handle properties without nestedProperties when sortNestedObjects is enabled[0m
+
+[0m  Recursive Sorting Fix Tests[0m
+  [32m  ✔[0m[90m should recursively sort nested object properties in type alias[0m
+  [32m  ✔[0m[90m should not recursively sort when sortNestedObjects is false[0m
+
+[0m  TypeScript Reconstructor Test Suite[0m
+  [32m  ✔[0m[90m Reconstruct simple interface[0m
+  [32m  ✔[0m[90m Reconstruct interface with comments[0m
+  [32m  ✔[0m[90m Reconstruct exported interface[0m
+  [32m  ✔[0m[90m Reconstruct interface with optional properties[0m
+  [32m  ✔[0m[90m Reconstruct object literal[0m
+  [32m  ✔[0m[90m Reconstruct object literal with function call[0m
+  [32m  ✔[0m[90m Reconstruct type alias[0m
+  [32m  ✔[0m[90m Reconstruct multiple entities[0m
+  [32m  ✔[0m[90m Reconstruct with custom indentation[0m
+  [32m  ✔[0m[90m Reconstruct without comments[0m
+  [32m  ✔[0m[90m Reconstruct sorted properties[0m
+  [32m  ✔[0m[90m Convenience function reconstructEntity[0m
+  [32m  ✔[0m[90m Convenience function reconstructEntities[0m
+  [32m  ✔[0m[90m Handle reconstruction errors gracefully[0m
+  [32m  ✔[0m[90m Preserve shorthand properties in objects[0m
+  [32m  ✔[0m[90m Update reconstructor options[0m
+  [32m  ✔[0m[90m Preserve trailing semicolons in object properties when present in original[0m
+  [32m  ✔[0m[90m Preserve no trailing punctuation in object properties when absent in original[0m
+  [32m  ✔[0m[90m Preserve mixed trailing punctuation styles in object properties[0m
+
+[0m  Quoted Properties Sorting Test Suite[0m
+  [32m  ✔[0m[90m Sort quoted and unquoted properties alphabetically[0m
+  [32m  ✔[0m[90m Sort mixed quoted properties with CSS-like selectors[0m
+  [32m  ✔[0m[90m Sort quoted numeric properties with string properties[0m
+  [32m  ✔[0m[90m Sort single and double quoted properties together[0m
+  [32m  ✔[0m[90m Sort complex CSS theme properties[0m
+
+[0m  Performance and Stress Tests[0m
+[0m    Large File Processing Performance[0m
+    📊 1000 properties processed in 8.05ms
+    [32m  ✔[0m[90m Process interface with 1000 properties[0m
+    📊 5000 properties processed in 17.37ms, using 0.73MB
+    [32m  ✔[0m[90m Process interface with 5000 properties[0m
+    📊 500 CSS rules processed in 198.60ms
+    [32m  ✔[0m[90m Process CSS file with 500 rules[0m[31m (199ms)[0m
+    📊 2000 Go struct fields processed in 1.73ms
+    [32m  ✔[0m[90m Process Go struct with 2000 fields[0m
+[0m    Memory Usage and Leak Tests[0m
+    📊 Memory growth over 50 iterations: -0.01MB
+    [32m  ✔[0m[90m Memory stability with repeated processing[0m
+    📊 50-level nesting processed in 0.19ms, using 0.16MB
+    [32m  ✔[0m[90m Memory usage with deeply nested objects[0m
+[0m    Stress Testing - Edge Cases[0m
+    📊 10000 duplicate properties sorted in 3.31ms
+    [32m  ✔[0m[90m Stress test with many duplicate property names[0m
+    📊 500 complex type properties processed in 6.16ms
+    [32m  ✔[0m[90m Stress test with complex property types[0m
+    📊 1000 properties with mixed comments processed in 6.18ms
+    [32m  ✔[0m[90m Stress test with mixed content and comments[0m
+[0m    Concurrent Processing Stress Test[0m
+    📊 5 concurrent operations completed in 41.67ms
+    [32m  ✔[0m[90m Multiple simultaneous processing operations[0m[33m (42ms)[0m
+[0m    Performance Regression Tests[0m
+    📊 Performance Benchmarks:
+      Small interface (10 props): avg=0.03ms, min=0.02ms, max=0.06ms
+      Medium interface (100 props): avg=0.14ms, min=0.14ms, max=0.15ms
+      Large interface (500 props): avg=0.71ms, min=0.64ms, max=1.12ms
+      CSS rules (50 rules): avg=1.78ms, min=1.52ms, max=2.06ms
+      Go struct (100 fields): avg=0.12ms, min=0.06ms, max=0.31ms
+    [32m  ✔[0m[90m Baseline performance benchmarks[0m
+[0m    Resource Usage Monitoring[0m
+    📊 CPU time for 2000 properties with nesting: 3.51ms
+    [32m  ✔[0m[90m CPU usage during intensive processing[0m
+    📊 File Size vs Processing Time:
+      1KB: 0.04ms
+      5KB: 0.10ms
+      10KB: 0.18ms
+      25KB: 0.46ms
+      50KB: 0.88ms
+    [32m  ✔[0m[90m File size impact on performance[0m
+
+[0m  ParserUtils Test Suite[0m
+[0m    BaseParserUtils[0m
+[0m      Constructor and Options[0m
+      [32m  ✔[0m[90m Should initialize with default options[0m
+      [32m  ✔[0m[90m Should override default options with provided options[0m
+      [32m  ✔[0m[90m Should merge options correctly[0m
+[0m      getLineNumber[0m
+      [32m  ✔[0m[90m Should return correct line number for position at start[0m
+      [32m  ✔[0m[90m Should return correct line number for position in middle[0m
+      [32m  ✔[0m[90m Should return correct line number for position at end[0m
+      [32m  ✔[0m[90m Should handle empty source code[0m
+      [32m  ✔[0m[90m Should handle single line source code[0m
+      [32m  ✔[0m[90m Should handle position beyond end of string[0m
+      [32m  ✔[0m[90m Should handle source with only newlines[0m
+[0m      applySorting[0m
+      [32m  ✔[0m[90m Should sort properties in ascending order[0m
+      [32m  ✔[0m[90m Should sort properties in descending order[0m
+      [32m  ✔[0m[90m Should not sort when sortOrder is not specified[0m
+      [32m  ✔[0m[90m Should handle empty entities array[0m
+      [32m  ✔[0m[90m Should handle entity with no properties[0m
+      [32m  ✔[0m[90m Should handle sorting errors gracefully[0m
+[0m      sortParseResult[0m
+      [32m  ✔[0m[90m Should return new result with sorted properties[0m
+      [32m  ✔[0m[90m Should default to ascending sort order[0m
+      [32m  ✔[0m[90m Should handle descending sort order[0m
+      [32m  ✔[0m[90m Should preserve existing errors and add new ones[0m
+      [32m  ✔[0m[90m Should handle empty results[0m
+[0m      isExported[0m
+      [32m  ✔[0m[90m Should return true for capitalized names[0m
+      [32m  ✔[0m[90m Should return false for lowercase names[0m
+      [32m  ✔[0m[90m Should return false for empty string[0m
+      [32m  ✔[0m[90m Should handle names starting with underscore[0m
+      [32m  ✔[0m[90m Should handle names starting with number[0m
+      [32m  ✔[0m[90m Should handle single character names[0m
+[0m    ParserUtils Static Methods[0m
+[0m      detectFileType[0m
+      [32m  ✔[0m[90m Should detect JavaScript files[0m
+      [32m  ✔[0m[90m Should detect TypeScript files[0m
+      [32m  ✔[0m[90m Should detect CSS files[0m
+      [32m  ✔[0m[90m Should detect SCSS files[0m
+      [32m  ✔[0m[90m Should detect SASS files[0m
+      [32m  ✔[0m[90m Should detect LESS files[0m
+      [32m  ✔[0m[90m Should detect Go files[0m
+      [32m  ✔[0m[90m Should default to TypeScript for unknown extensions[0m
+      [32m  ✔[0m[90m Should handle files with multiple dots[0m
+      [32m  ✔[0m[90m Should handle uppercase extensions[0m
+      [32m  ✔[0m[90m Should handle empty filename[0m
+      [32m  ✔[0m[90m Should handle filename with only extension[0m
+[0m      cleanCommentText[0m
+      [32m  ✔[0m[90m Should clean single-line comments[0m
+      [32m  ✔[0m[90m Should clean multi-line comments[0m
+      [32m  ✔[0m[90m Should clean JSDoc comments[0m
+      [32m  ✔[0m[90m Should handle comments with only whitespace[0m
+      [32m  ✔[0m[90m Should preserve internal formatting[0m
+      [32m  ✔[0m[90m Should handle malformed comments gracefully[0m
+      [32m  ✔[0m[90m Should handle nested comment markers[0m
+[0m      getLineNumber[0m
+      [32m  ✔[0m[90m Should return correct line number for position at start[0m
+      [32m  ✔[0m[90m Should return correct line number for position in middle[0m
+      [32m  ✔[0m[90m Should return correct line number for position at end[0m
+      [32m  ✔[0m[90m Should handle empty source code[0m
+      [32m  ✔[0m[90m Should handle single line[0m
+      [32m  ✔[0m[90m Should handle position beyond end[0m
+      [32m  ✔[0m[90m Should handle different line endings[0m
+[0m      getPositionFromLine[0m
+      [32m  ✔[0m[90m Should return correct position for first line[0m
+      [32m  ✔[0m[90m Should return correct position for middle line[0m
+      [32m  ✔[0m[90m Should return correct position for last line[0m
+      [32m  ✔[0m[90m Should handle empty source code[0m
+      [32m  ✔[0m[90m Should handle single line[0m
+      [32m  ✔[0m[90m Should handle line number beyond end[0m
+      [32m  ✔[0m[90m Should handle line number 0 or negative[0m
+      [32m  ✔[0m[90m Should handle different line endings[0m
+
+[0m  TypeScript Parser Test Suite[0m
+  [32m  ✔[0m[90m Parse simple interface[0m
+  [32m  ✔[0m[90m Parse interface with single-line comments[0m
+  [32m  ✔[0m[90m Parse interface with multi-line comments[0m
+  [32m  ✔[0m[90m Parse object literal[0m
+  [32m  ✔[0m[90m Parse exported interface[0m
+  [32m  ✔[0m[90m Parse optional properties[0m
+  [32m  ✔[0m[90m Parse type alias with object type[0m
+  [32m  ✔[0m[90m Parse multiple entities in one file[0m
+  [32m  ✔[0m[90m Parse object with quoted property keys (CSS-like)[0m
+  [32m  ✔[0m[90m End-to-end: Parse, sort, and reconstruct CSS-like object with quoted keys[0m
+  [32m  ✔[0m[90m Handle parsing errors gracefully[0m
+  [32m  ✔[0m[90m Parse interface with readonly properties[0m
+  [32m  ✔[0m[90m Parse object with numeric keys[0m
+  [32m  ✔[0m[90m Parse interface with function types[0m
+  [32m  ✔[0m[90m Parse object with array and object values[0m
+  [32m  ✔[0m[90m Parse interface with extends clause[0m
+  [32m  ✔[0m[90m Parse interface with union and intersection types[0m
+  [32m  ✔[0m[90m Parse object with symbol keys[0m
+  [32m  ✔[0m[90m Parse very deeply nested comments[0m
+
+[0m  Numeric Sorting Test Suite[0m
+  [32m  ✔[0m[90m Sort numeric keys in numerical order (not alphanumeric)[0m
+  [32m  ✔[0m[90m Sort mixed numeric and string keys correctly[0m
+  [32m  ✔[0m[90m Sort quoted numeric keys correctly[0m
+  [32m  ✔[0m[90m Sort decimal numbers correctly[0m
+  [32m  ✔[0m[90m Sort negative numbers correctly[0m
+  [32m  ✔[0m[90m Sort CSS-like numeric properties correctly[0m
+  [32m  ✔[0m[90m Sort hexadecimal numbers correctly[0m
+  [32m  ✔[0m[90m Sort binary numbers correctly[0m
+  [32m  ✔[0m[90m Sort very large numbers correctly[0m
+  [32m  ✔[0m[90m Sort numbers with different formats[0m
+  [32m  ✔[0m[90m Sort mixed positive and negative decimals[0m
+  [32m  ✔[0m[90m Sort numbers with exponential notation[0m
+  [32m  ✔[0m[90m Sort descending order with numeric keys[0m
+  [32m  ✔[0m[90m Sort with Infinity and NaN-like strings[0m
+  [32m  ✔[0m[90m Sort empty string and whitespace-only numeric strings[0m
+
+[0m  Nested Object Sorting Tests[0m
+  [32m  ✔[0m[90m should sort nested objects when sortNestedObjects is true[0m
+  [32m  ✔[0m[90m should not sort nested objects when sortNestedObjects is false[0m
+  [32m  ✔[0m[90m should handle simple nested objects[0m
+  [32m  ✔[0m[90m should handle deeply nested objects[0m
+  [32m  ✔[0m[90m should handle function calls with object literal in non-first argument[0m
+
+[0m  JSON Parser and Sorting Test Suite[0m
+[0m    JSON Parser Tests[0m
+    [32m  ✔[0m[90m Parse simple JSON object[0m
+    [32m  ✔[0m[90m Parse JSON array[0m
+    [32m  ✔[0m[90m Parse JSONC with comments[0m
+    [32m  ✔[0m[90m Parse nested JSON objects[0m
+    [32m  ✔[0m[90m Parse package.json structure[0m
+    [32m  ✔[0m[90m Parse API response JSON[0m
+    [32m  ✔[0m[90m Handle malformed JSON[0m
+    [32m  ✔[0m[90m Parse empty JSON object[0m
+    [32m  ✔[0m[90m Parse empty JSON array[0m
+[0m    JSON Property Sorter Tests[0m
+    [32m  ✔[0m[90m Sort object properties in ascending order[0m
+    [32m  ✔[0m[90m Sort object properties in descending order[0m
+    [32m  ✔[0m[90m Preserve array order by default[0m
+    [32m  ✔[0m[90m Sort arrays when preserveArrayOrder is false[0m
+    [32m  ✔[0m[90m Apply custom key order[0m
+    [32m  ✔[0m[90m Group by schema patterns[0m
+    [32m  ✔[0m[90m Do not sort when sortObjectKeys is false[0m
+[0m    Core Processor JSON Integration Tests[0m
+    [32m  ✔[0m[90m Process simple JSON file[0m
+    [32m  ✔[0m[90m Process JSONC file with comments[0m
+    [32m  ✔[0m[90m Process nested JSON objects[0m
+    [32m  ✔[0m[90m Process JSON array[0m
+    [32m  ✔[0m[90m Handle invalid JSON gracefully[0m
+[0m    Real-world JSON File Tests[0m
+    [32m  ✔[0m[90m Process package.json structure[0m
+    [32m  ✔[0m[90m Process TSConfig JSON[0m
+    [32m  ✔[0m[90m Process API response JSON[0m
+
+[0m  Integration Tests[0m
+[0m    End-to-End Processing Pipeline[0m
+    [32m  ✔[0m[90m Complete TypeScript interface processing workflow[0m
+    [32m  ✔[0m[90m Complete object literal processing workflow[0m
+    [32m  ✔[0m[90m Mixed entity types processing workflow[0m
+[0m    Component Integration Tests[0m
+    [32m  ✔[0m[90m Parser and Sorter integration[0m
+    [32m  ✔[0m[90m Sorter and Reconstructor integration[0m
+    [32m  ✔[0m[90m Full pipeline with custom options[0m
+    [32m  ✔[0m[90m Component error propagation[0m
+[0m    Error Handling Integration[0m
+    [32m  ✔[0m[90m Graceful handling of malformed input through full pipeline[0m
+    [32m  ✔[0m[90m Component error propagation[0m
+[0m    Performance Integration Tests[0m
+    [32m  ✔[0m[90m Large file processing performance[0m
+    [32m  ✔[0m[90m Memory usage with nested objects[0m
+[0m    Configuration Integration Tests[0m
+    [32m  ✔[0m[90m Multiple configuration options working together[0m
+    [32m  ✔[0m[90m CSS-specific configuration integration[0m
+[0m    Real-world Scenario Tests[0m
+    [32m  ✔[0m[90m React component interface processing[0m
+    [32m  ✔[0m[90m API configuration object processing[0m
+
+[0m  GoParser Tests[0m
+  [32m  ✔[0m[90m should parse simple struct[0m
+  [32m  ✔[0m[90m should parse struct with tags[0m
+  [32m  ✔[0m[90m should parse struct with comments[0m
+  [32m  ✔[0m[90m should parse embedded fields[0m
+  [32m  ✔[0m[90m should sort struct fields alphabetically[0m
+  [32m  ✔[0m[90m should handle multiple structs[0m
+  [32m  ✔[0m[90m should detect exported vs unexported structs[0m
+
+[0m  Go Language Integration Tests[0m
+  [32m  ✔[0m[90m should parse and sort Go structs with all features[0m
+  [32m  ✔[0m[90m should handle descending sort order[0m
+  [32m  ✔[0m[90m should handle embedded fields[0m
+  [32m  ✔[0m[90m should handle multi-line comments[0m
+  [32m  ✔[0m[90m should handle unexported structs and fields[0m
+  [32m  ✔[0m[90m should handle empty structs gracefully[0m
+  [32m  ✔[0m[90m should handle complex struct tags[0m
+  [32m  ✔[0m[90m should handle files with no structs[0m
+
+[0m  Go Advanced Features Test Suite[0m
+[0m    Preserve Tags Sorting Tests[0m
+    [32m  ✔[0m[90m Group fields by tag patterns[0m
+    [32m  ✔[0m[90m Handle fields with only single tag types[0m
+[0m    Enhanced By-Size Sorting Tests[0m
+    [32m  ✔[0m[90m Sort by enhanced type sizes[0m
+    [32m  ✔[0m[90m Handle complex types in size sorting[0m
+[0m    Integration Tests with Core Processor[0m
+    [32m  ✔[0m[90m Preserve tags sorting with real Go code[0m
+    [32m  ✔[0m[90m Enhanced by-size sorting with real Go code[0m
+[0m    Go Sorter Options Tests[0m
+    [32m  ✔[0m[90m Update Go sorter options[0m
+    [32m  ✔[0m[90m Get Go sorter options[0m
+
+[0m  FormattingUtils Test Suite[0m
+[0m    resolveIndentation[0m
+    [32m  ✔[0m[90m Should return tab character when indentationType is tabs[0m
+    [32m  ✔[0m[90m Should return spaces when indentationType is spaces with default size[0m
+    [32m  ✔[0m[90m Should return custom number of spaces when indentationSize is specified[0m
+    [32m  ✔[0m[90m Should return 8 spaces when indentationSize is 8[0m
+    [32m  ✔[0m[90m Should auto-detect from editor when insertSpaces is true[0m
+    [32m  ✔[0m[90m Should auto-detect tabs from editor when insertSpaces is false[0m
+    [32m  ✔[0m[90m Should handle editor with non-numeric tabSize[0m
+    [32m  ✔[0m[90m Should fallback to 4 spaces when no options or editor provided[0m
+[0m    resolveLineEnding[0m
+    [32m  ✔[0m[90m Should return LF when lineEnding is lf[0m
+    [32m  ✔[0m[90m Should return CRLF when lineEnding is crlf[0m
+    [32m  ✔[0m[90m Should auto-detect CRLF from file content when more CRLF than LF[0m
+    [32m  ✔[0m[90m Should auto-detect LF from file content when more LF than CRLF[0m
+    [32m  ✔[0m[90m Should handle file content with only LF[0m
+    [32m  ✔[0m[90m Should handle file content with only CRLF[0m
+    [32m  ✔[0m[90m Should handle empty file content[0m
+    [32m  ✔[0m[90m Should return platform default when no file content provided[0m
+[0m    shouldIncludeComments[0m
+    [32m  ✔[0m[90m Should return false when preserveComments is explicitly false[0m
+    [32m  ✔[0m[90m Should return true when preserveComments is true[0m
+    [32m  ✔[0m[90m Should return false when includeComments is false[0m
+    [32m  ✔[0m[90m Should return true when includeComments is true[0m
+    [32m  ✔[0m[90m Should return true when no comment options specified (default)[0m
+    [32m  ✔[0m[90m Should return true when preserveComments is undefined and includeComments is undefined[0m
+[0m    calculatePropertySpacing[0m
+    [32m  ✔[0m[90m Should return spaced format when propertySpacing is spaced[0m
+    [32m  ✔[0m[90m Should return aligned format with alignment when propertySpacing is aligned[0m
+    [32m  ✔[0m[90m Should return aligned format without alignment when no properties provided[0m
+    [32m  ✔[0m[90m Should return aligned format without alignment when empty properties array[0m
+    [32m  ✔[0m[90m Should return compact format when propertySpacing is compact[0m
+    [32m  ✔[0m[90m Should return compact format as default when propertySpacing is undefined[0m
+    [32m  ✔[0m[90m Should handle single character property names in aligned mode[0m
+    [32m  ✔[0m[90m Should handle very long property names in aligned mode[0m
+[0m    formatTrailingComma[0m
+    [32m  ✔[0m[90m Should add comma for last property when trailingCommas is add[0m
+    [32m  ✔[0m[90m Should preserve semicolon for last property when trailingCommas is add and original has semicolon[0m
+    [32m  ✔[0m[90m Should add comma for non-last property when trailingCommas is add[0m
+    [32m  ✔[0m[90m Should preserve original punctuation for non-last property when trailingCommas is add[0m
+    [32m  ✔[0m[90m Should remove comma for last property when trailingCommas is remove[0m
+    [32m  ✔[0m[90m Should preserve semicolon for last property when trailingCommas is remove[0m
+    [32m  ✔[0m[90m Should preserve comma for non-last property when trailingCommas is remove[0m
+    [32m  ✔[0m[90m Should preserve original punctuation when trailingCommas is preserve[0m
+    [32m  ✔[0m[90m Should preserve original punctuation as default when trailingCommas is undefined[0m
+    [32m  ✔[0m[90m Should handle empty original punctuation[0m
+    [32m  ✔[0m[90m Should handle mixed punctuation in original[0m
+[0m    getGroupSeparator[0m
+    [32m  ✔[0m[90m Should return line ending when blankLinesBetweenGroups is true and groups differ[0m
+    [32m  ✔[0m[90m Should return empty string when blankLinesBetweenGroups is false[0m
+    [32m  ✔[0m[90m Should return empty string when groups are the same[0m
+    [32m  ✔[0m[90m Should return empty string when previousGroup is null[0m
+    [32m  ✔[0m[90m Should use CRLF line ending when specified[0m
+    [32m  ✔[0m[90m Should return empty string when blankLinesBetweenGroups is undefined (default false)[0m
+[0m    convertCommentStyle[0m
+    [32m  ✔[0m[90m Should preserve single-line comment when targetStyle is preserve[0m
+    [32m  ✔[0m[90m Should preserve multi-line comment when targetStyle is preserve[0m
+    [32m  ✔[0m[90m Should convert to single-line when targetStyle is single-line[0m
+    [32m  ✔[0m[90m Should keep single-line when targetStyle is single-line[0m
+    [32m  ✔[0m[90m Should convert to multi-line when targetStyle is multi-line[0m
+    [32m  ✔[0m[90m Should keep multi-line when targetStyle is multi-line[0m
+    [32m  ✔[0m[90m Should fallback to preserve behavior with invalid targetStyle[0m
+    [32m  ✔[0m[90m Should handle empty comment text[0m
+    [32m  ✔[0m[90m Should handle comment text with special characters[0m
+    [32m  ✔[0m[90m Should handle multi-line comment text with line breaks[0m
+
+[0m  Extension Test Suite[0m
+  [32m  ✔[0m[90m Extension module should be importable[0m
+  [32m  ✔[0m[90m Extension should have proper structure[0m
+  [32m  ✔[0m[90m Should handle configuration gracefully[0m
+  [32m  ✔[0m[90m Should handle empty workspace gracefully[0m
+
+[0m  Extension Comprehensive Test Suite[0m
+[0m    Extension Module Structure[0m
+    [32m  ✔[0m[90m Should export activate function[0m
+    [32m  ✔[0m[90m Should export deactivate function[0m
+[0m    Extension Configuration Validation[0m
+    [32m  ✔[0m[90m Should handle all configuration options[0m
+    [32m  ✔[0m[90m Should validate TypeScript-specific options[0m
+    [32m  ✔[0m[90m Should validate CSS-specific options[0m
+    [32m  ✔[0m[90m Should validate Go-specific options[0m
+    [32m  ✔[0m[90m Should validate formatting options[0m
+[0m    Extension Error Handling[0m
+    [32m  ✔[0m[90m Should handle missing dependencies gracefully[0m
+    [32m  ✔[0m[90m Should have proper command naming convention[0m
+[0m    Extension Integration Points[0m
+    [32m  ✔[0m[90m Should integrate with FileProcessor[0m
+    [32m  ✔[0m[90m Should integrate with formattingUtils[0m
+    [32m  ✔[0m[90m Should integrate with filePatternFilter[0m
+[0m    Extension Performance Considerations[0m
+    [32m  ✔[0m[90m Should have reasonable module loading time[0m
+    [32m  ✔[0m[90m Should not have circular dependencies[0m
+[0m    Extension Memory Management[0m
+    [32m  ✔[0m[90m Should properly handle context subscriptions[0m
+    [32m  ✔[0m[90m Should handle multiple activation scenarios[0m
+
+[0m  Error Handling Test Suite[0m
+[0m    Parser Error Handling[0m
+    [32m  ✔[0m[90m Handle completely empty input[0m
+    [32m  ✔[0m[90m Handle input with only whitespace[0m
+    [32m  ✔[0m[90m Handle input with only comments[0m
+    [32m  ✔[0m[90m Handle severely malformed TypeScript[0m
+    [32m  ✔[0m[90m Handle extremely long property names[0m
+    [32m  ✔[0m[90m Handle properties with extremely long values[0m
+    [32m  ✔[0m[90m Handle nested objects with circular-like references[0m
+    [32m  ✔[0m[90m Handle properties with null and undefined values[0m
+[0m    Sorter Error Handling[0m
+    [32m  ✔[0m[90m Handle properties with null names[0m
+    [32m  ✔[0m[90m Handle properties with special Unicode characters[0m
+    [32m  ✔[0m[90m Handle properties with extremely long comments[0m
+    [32m  ✔[0m[90m Handle sorting with invalid options[0m
+[0m    Reconstructor Error Handling[0m
+    [32m  ✔[0m[90m Handle entity with missing required fields[0m
+    [32m  ✔[0m[90m Handle properties with malformed comments[0m
+    [32m  ✔[0m[90m Handle reconstruction with extreme indentation[0m
+[0m    Core Processor Error Handling[0m
+    [32m  ✔[0m[90m Handle processing with invalid sort order[0m
+    [32m  ✔[0m[90m Handle processing with circular object options[0m
+    [32m  ✔[0m[90m Handle processing extremely large files[0m
+    [32m  ✔[0m[90m Handle processing with memory-intensive nested objects[0m
+[0m    Integration Error Handling[0m
+    [32m  ✔[0m[90m Handle full pipeline with malformed input[0m
+    [32m  ✔[0m[90m Handle pipeline with mixed valid and invalid entities[0m
+
+[0m  Edge Cases Test Suite[0m
+[0m    Parser Edge Cases[0m
+    [32m  ✔[0m[90m Parse interface with empty body[0m
+    [32m  ✔[0m[90m Parse interface with only whitespace and comments[0m
+    [32m  ✔[0m[90m Parse object with computed property names[0m
+    [32m  ✔[0m[90m Parse object with method shorthand[0m
+    [32m  ✔[0m[90m Parse interface with complex generic types[0m
+    [32m  ✔[0m[90m Parse object with spread operator[0m
+    [32m  ✔[0m[90m Parse interface with index signatures[0m
+    [32m  ✔[0m[90m Parse nested object literals with multiple levels[0m
+    [32m  ✔[0m[90m Parse object with getter and setter[0m
+    [32m  ✔[0m[90m Parse interface with call signatures[0m
+    [32m  ✔[0m[90m Parse malformed code with missing braces[0m
+    [32m  ✔[0m[90m Parse code with Unicode property names[0m
+    [32m  ✔[0m[90m Parse very large interface[0m
+[0m    Sorter Edge Cases[0m
+    [32m  ✔[0m[90m Sort properties with identical names but different cases[0m
+    [32m  ✔[0m[90m Sort properties with special characters[0m
+    [32m  ✔[0m[90m Sort numeric properties with leading zeros[0m
+    [32m  ✔[0m[90m Sort properties with scientific notation[0m
+    [32m  ✔[0m[90m Sort properties with very long names[0m
+    [32m  ✔[0m[90m Sort empty array of properties[0m
+    [32m  ✔[0m[90m Sort single property[0m
+    [32m  ✔[0m[90m Sort properties with null/undefined-like names[0m
+    [32m  ✔[0m[90m Sort with case-sensitive option[0m
+    [32m  ✔[0m[90m Sort properties with mixed trailing punctuation[0m
+[0m    Reconstructor Edge Cases[0m
+    [32m  ✔[0m[90m Reconstruct interface with no properties[0m
+    [32m  ✔[0m[90m Reconstruct object with only comments[0m
+    [32m  ✔[0m[90m Reconstruct with very long property names[0m
+    [32m  ✔[0m[90m Reconstruct with custom line endings[0m
+    [32m  ✔[0m[90m Reconstruct with extreme indentation[0m
+    [32m  ✔[0m[90m Reconstruct malformed entity gracefully[0m
+[0m    Core Processor Edge Cases[0m
+    [32m  ✔[0m[90m Process file with only whitespace[0m
+    [32m  ✔[0m[90m Process file with only comments[0m
+    [32m  ✔[0m[90m Process with conflicting options[0m
+    [32m  ✔[0m[90m Process extremely large file[0m
+    [32m  ✔[0m[90m Process file with mixed entity types and complex nesting[0m
+    [32m  ✔[0m[90m Process with null/undefined options[0m
+[0m    Comment Edge Cases[0m
+    [32m  ✔[0m[90m Handle comments with special characters[0m
+    [32m  ✔[0m[90m Handle nested comments in object literals[0m
+    [32m  ✔[0m[90m Handle malformed comments[0m
+    [32m  ✔[0m[90m Handle comments with code-like content[0m
+[0m    Performance Edge Cases[0m
+    [32m  ✔[0m[90m Sort properties with many duplicates[0m
+    [32m  ✔[0m[90m Process file with deeply nested objects[0m
+[0m    Integration Edge Cases[0m
+    [32m  ✔[0m[90m Round-trip: parse, sort, reconstruct, parse again[0m
+    [32m  ✔[0m[90m Consistency across different sort orders[0m
+
+[0m  CSS Comment Duplication Test Suite[0m
+  [32m  ✔[0m[90m should not duplicate standalone comments when sorting CSS rules[0m
+  [32m  ✔[0m[90m should not duplicate comments during full reconstruction process[0m
+
+[0m  CSS Parser Test Suite[0m
+  [32m  ✔[0m[90m Parse simple CSS rule[0m
+  [32m  ✔[0m[90m Parse CSS with !important[0m
+  [32m  ✔[0m[90m Parse CSS with vendor prefixes[0m
+  [32m  ✔[0m[90m Parse CSS with comments[0m
+  [32m  ✔[0m[90m Parse multiple CSS rules[0m
+  [32m  ✔[0m[90m Parse SCSS nested rules[0m
+  [32m  ✔[0m[90m Parse CSS media queries[0m
+  [32m  ✔[0m[90m Parse CSS keyframes[0m
+  [32m  ✔[0m[90m Convert SASS indented syntax[0m
+  [32m  ✔[0m[90m Handle empty CSS[0m
+  [32m  ✔[0m[90m Handle CSS with only comments[0m
+  [32m  ✔[0m[90m Sort CSS keyframe percentages when sortKeyframes is enabled[0m
+  [32m  ✔[0m[90m Preserve keyframe order when sortKeyframes is disabled[0m
+
+[0m  CSS Reconstructor Test Suite[0m
+  [32m  ✔[0m[90m Reconstruct simple CSS rule[0m
+  [32m  ✔[0m[90m Reconstruct CSS with !important[0m
+  [32m  ✔[0m[90m Reconstruct CSS with comments[0m
+  [32m  ✔[0m[90m Reconstruct SASS without braces[0m
+  [32m  ✔[0m[90m Reconstruct with custom indentation[0m
+  [32m  ✔[0m[90m Update reconstructor options[0m
+
+[0m  CSS Integration Test Suite[0m
+  [32m  ✔[0m[90m Process CSS file end-to-end[0m
+  [32m  ✔[0m[90m Process SCSS file with nested rules[0m
+  [32m  ✔[0m[90m Process CSS with vendor prefixes and grouping[0m
+  [32m  ✔[0m[90m Process CSS with !important sorting[0m
+  [32m  ✔[0m[90m Process SASS indented syntax[0m
+  [32m  ✔[0m[90m Process LESS file[0m
+  [32m  ✔[0m[90m Handle CSS with syntax errors gracefully[0m
+  [32m  ✔[0m[90m Process empty CSS file[0m
+  [32m  ✔[0m[90m Process CSS with only comments[0m
+  [32m  ✔[0m[90m Group CSS properties by category when groupByCategory is enabled[0m
+
+[0m  CSS Property Sorter Integration[0m
+  [32m  ✔[0m[90m Sort CSS properties with vendor prefixes grouped[0m
+  [32m  ✔[0m[90m Sort CSS properties by importance[0m
+
+[0m  Coverage Test Suite[0m
+  [32m  ✔[0m[90m Exercise main modules for coverage[0m
+  [32m  ✔[0m[90m Exercise parser with different inputs[0m
+  [32m  ✔[0m[90m Exercise sorter with different options[0m
+  [32m  ✔[0m[90m Exercise reconstructor with different options[0m
+  [32m  ✔[0m[90m Exercise core processor with different scenarios[0m
+
+[0m  Core Processor Test Suite[0m
+  [32m  ✔[0m[90m Process simple interface - ascending order[0m
+  [32m  ✔[0m[90m Process simple interface - descending order[0m
+  [32m  ✔[0m[90m Process interface with comments[0m
+  [32m  ✔[0m[90m Process object literal[0m
+  [32m  ✔[0m[90m Process multiple entities in one file[0m
+  [32m  ✔[0m[90m Handle already sorted properties[0m
+  [32m  ✔[0m[90m Handle empty file[0m
+  [32m  ✔[0m[90m Handle file with no sortable entities[0m
+  [32m  ✔[0m[90m Handle syntax errors gracefully[0m
+  [32m  ✔[0m[90m Process with custom indentation[0m
+  [32m  ✔[0m[90m Process with comments disabled[0m
+  [32m  ✔[0m[90m Convenience function processText[0m
+  [32m  ✔[0m[90m Process function call object pattern[0m
+  [32m  ✔[0m[90m Process optional properties[0m
+
+[0m  Comment Preservation Test Suite[0m
+  [32m  ✔[0m[90m Single-line comments are preserved during sorting[0m
+  [32m  ✔[0m[90m Multi-line comments are preserved during sorting[0m
+  [32m  ✔[0m[90m Multiple comments per property are preserved[0m
+  [32m  ✔[0m[90m Properties without comments mixed with commented properties[0m
+  [32m  ✔[0m[90m Descending sort preserves comments correctly[0m
+  [32m  ✔[0m[90m Comment line numbers and raw text are preserved[0m
+  [32m  ✔[0m[90m Comment preservation option can be controlled[0m
+
+[0m  Comment Duplication Bug Test Suite[0m
+  [32m  ✔[0m[90m Single line comment should not be duplicated during reconstruction[0m
+  [32m  ✔[0m[90m Leading comments should be extracted correctly for object literals[0m
+  [32m  ✔[0m[90m Multiple leading comments should not be duplicated[0m
+  [32m  ✔[0m[90m Comment with property comments should not interfere[0m
+  [32m  ✔[0m[90m Interface with leading comment should not duplicate[0m
+  [32m  ✔[0m[90m Type alias with leading comment should not duplicate[0m
+  [32m  ✔[0m[90m Multiple entities in file should not duplicate comments (potential bug scenario)[0m
+  [32m  ✔[0m[90m File processing with single entity should not duplicate comments[0m
+  [32m  ✔[0m[90m Multiple entities with mixed comment types should not duplicate[0m
+  [32m  ✔[0m[90m Entity with no leading comments should work correctly in multi-entity file[0m
+  [32m  ✔[0m[90m Multiple comments with gaps should not duplicate[0m
+
+[0m  Advanced Formatting Options Test Suite[0m
+[0m    Property Spacing Tests[0m
+    [32m  ✔[0m[90m Compact spacing (default)[0m
+    [32m  ✔[0m[90m Spaced spacing[0m
+    [32m  ✔[0m[90m Aligned spacing[0m
+[0m    Trailing Comma Tests[0m
+    [32m  ✔[0m[90m Preserve trailing commas (default)[0m
+    [32m  ✔[0m[90m Add trailing commas[0m
+    [31m  1) Remove trailing commas[0m
+[0m    Comment Style Tests[0m
+    [31m  2) Preserve comment style (default)[0m
+    [32m  ✔[0m[90m Convert to single-line comments[0m
+    [32m  ✔[0m[90m Convert to multi-line comments[0m
+[0m    Combined Formatting Options Tests[0m
+    [31m  3) All formatting options together[0m
+    [31m  4) Object literal with all formatting options[0m
+[0m    Blank Lines Between Groups Tests[0m
+    [32m  ✔[0m[90m Blank lines between groups disabled (default)[0m
+    [32m  ✔[0m[90m Blank lines between groups enabled[0m
+[0m    Edge Cases[0m
+    [31m  5) Empty interface with formatting options[0m
+    [31m  6) Single property with all formatting options[0m
+
+
+[92m [0m[32m 490 passing[0m[90m (467ms)[0m
+[31m  6 failing[0m
+
+[0m  1) Advanced Formatting Options Test Suite
+       Trailing Comma Tests
+         Remove trailing commas:
+
+      [31mAssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+
+  assert.ok(result.includes('age: 25\n'))
+[0m
+      [32m+ expected[0m [31m- actual[0m
+
+      [31m-false[0m
+      [32m+true[0m
+      [0m[90m
+      at Context.<anonymous> (out/test/suite/advanced-formatting.test.js:122:20)
+      at process.processImmediate (node:internal/timers:491:21)
+[0m
+[0m  2) Advanced Formatting Options Test Suite
+       Comment Style Tests
+         Preserve comment style (default):
+
+      [31mAssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+
+  assert.ok(result.includes('/* Multi-line comment */'))
+[0m
+      [32m+ expected[0m [31m- actual[0m
+
+      [31m-false[0m
+      [32m+true[0m
+      [0m[90m
+      at Context.<anonymous> (out/test/suite/advanced-formatting.test.js:143:20)
+      at process.processImmediate (node:internal/timers:491:21)
+[0m
+[0m  3) Advanced Formatting Options Test Suite
+       Combined Formatting Options Tests
+         All formatting options together:
+
+      [31mAssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+
+  assert.ok(result.includes('string,'))
+[0m
+      [32m+ expected[0m [31m- actual[0m
+
+      [31m-false[0m
+      [32m+true[0m
+      [0m[90m
+      at Context.<anonymous> (out/test/suite/advanced-formatting.test.js:218:20)
+      at process.processImmediate (node:internal/timers:491:21)
+[0m
+[0m  4) Advanced Formatting Options Test Suite
+       Combined Formatting Options Tests
+         Object literal with all formatting options:
+
+      [31mAssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+
+  assert.ok(!result.includes('5000,'))
+[0m
+      [32m+ expected[0m [31m- actual[0m
+
+      [31m-false[0m
+      [32m+true[0m
+      [0m[90m
+      at Context.<anonymous> (out/test/suite/advanced-formatting.test.js:245:20)
+      at process.processImmediate (node:internal/timers:491:21)
+[0m
+[0m  5) Advanced Formatting Options Test Suite
+       Edge Cases
+         Empty interface with formatting options:
+
+      [31mAssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+
+  assert.ok(result.includes('{}'))
+[0m
+      [32m+ expected[0m [31m- actual[0m
+
+      [31m-false[0m
+      [32m+true[0m
+      [0m[90m
+      at Context.<anonymous> (out/test/suite/advanced-formatting.test.js:301:20)
+      at process.processImmediate (node:internal/timers:491:21)
+[0m
+[0m  6) Advanced Formatting Options Test Suite
+       Edge Cases
+         Single property with all formatting options:
+
+      [31mAssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+
+  assert.ok(result.includes('value : string,'))
+[0m
+      [32m+ expected[0m [31m- actual[0m
+
+      [31m-false[0m
+      [32m+true[0m
+      [0m[90m
+      at Context.<anonymous> (out/test/suite/advanced-formatting.test.js:319:20)
+      at process.processImmediate (node:internal/timers:491:21)
+[0m
+
+
+6 tests failed.

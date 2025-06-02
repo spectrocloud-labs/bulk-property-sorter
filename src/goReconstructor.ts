@@ -146,27 +146,38 @@ export class GoReconstructor {
     private reconstructField(property: ParsedProperty, indent: string): string[] {
         const lines: string[] = [];
 
-        // Add field comments (above the field)
+        // Add field comments (above the field) - these are leading comments
         if (this.options.includeComments && property.comments.length > 0) {
-            // Separate inline comments from above-line comments
-            const aboveComments = property.comments.filter(c => c.type === 'multi' || !this.isInlineComment(c, property));
-            const inlineComments = property.comments.filter(c => c.type === 'single' && this.isInlineComment(c, property));
+            lines.push(...this.formatComments(property.comments, indent));
+        }
 
-            if (aboveComments.length > 0) {
-                lines.push(...this.formatComments(aboveComments, indent));
-            }
-
-            // Handle field line with potential inline comment
+        // When preserveFormatting is enabled and we have trailing comments,
+        // we want to preserve the exact original spacing from fullText
+        if (this.options.preserveFormatting && 
+            property.fullText && 
+            this.options.includeComments && 
+            property.trailingComments && 
+            property.trailingComments.length > 0) {
+            
+            // Use the original full text as-is, it already contains the proper spacing and trailing comment
+            lines.push(`${indent}${property.fullText.trim()}`);
+        } else {
+            // Build the field line without comments first
             const fieldLine = this.buildFieldLine(property, indent);
-            if (inlineComments.length > 0) {
-                const inlineComment = inlineComments[0]; // Take first inline comment
-                lines.push(`${fieldLine} // ${inlineComment.text}`);
+            
+            // Add trailing comments if they exist
+            if (this.options.includeComments && property.trailingComments && property.trailingComments.length > 0) {
+                const trailingComment = property.trailingComments[0]; // Take first trailing comment
+                if (trailingComment.type === 'single') {
+                    lines.push(`${fieldLine} // ${trailingComment.text}`);
+                } else if (trailingComment.type === 'multi') {
+                    lines.push(`${fieldLine} /* ${trailingComment.text} */`);
+                } else {
+                    lines.push(fieldLine);
+                }
             } else {
                 lines.push(fieldLine);
             }
-        } else {
-            // No comments, just the field line
-            lines.push(this.buildFieldLine(property, indent));
         }
 
         return lines;
@@ -180,6 +191,34 @@ export class GoReconstructor {
      * @returns The complete field line
      */
     private buildFieldLine(property: ParsedProperty, indent: string): string {
+        if (this.options.preserveFormatting && property.fullText) {
+            // Use original formatting from fullText, but strip any trailing comments
+            // since we handle those separately
+            let fieldText = property.fullText.trim();
+            
+            // Find where the trailing comment starts so we can preserve spacing before it
+            let commentStart = -1;
+            
+            // Look for single-line comment
+            const singleLineMatch = fieldText.match(/(\s*)\/\/.*$/);
+            if (singleLineMatch) {
+                commentStart = fieldText.indexOf(singleLineMatch[0]);
+            } else {
+                // Look for multi-line comment
+                const multiLineMatch = fieldText.match(/(\s*)\/\*.*?\*\/\s*$/);
+                if (multiLineMatch) {
+                    commentStart = fieldText.indexOf(multiLineMatch[0]);
+                }
+            }
+            
+            if (commentStart >= 0) {
+                // Extract everything before the comment (preserving spacing)
+                fieldText = fieldText.substring(0, commentStart).trimEnd();
+            }
+            
+            return `${indent}${fieldText}`;
+        }
+        
         if (property.isEmbedded) {
             // Embedded field: just the type name
             return `${indent}${property.value}`;
@@ -194,18 +233,6 @@ export class GoReconstructor {
             
             return line;
         }
-    }
-
-    /**
-     * Determine if a comment is an inline comment for a specific property
-     * 
-     * @param comment - The comment to check
-     * @param property - The property to check against
-     * @returns True if the comment appears to be inline with the property
-     */
-    private isInlineComment(comment: PropertyComment, property: ParsedProperty): boolean {
-        // Simple heuristic: if comment is on the same line as the property, it's inline
-        return comment.line === property.line;
     }
 
     /**

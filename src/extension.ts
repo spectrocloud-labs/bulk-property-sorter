@@ -175,6 +175,14 @@ async function handleSortCommand(
     const sortInterfaceMethods = config.get<boolean>('go.sortInterfaceMethods', true)
     const preserveMethodSets = config.get<boolean>('go.preserveMethodSets', false)
 
+    // Get JSON-specific options
+    const sortObjectKeys = config.get<boolean>('json.sortObjectKeys', true)
+    const preserveArrayOrder = config.get<boolean>('json.preserveArrayOrder', true)
+    const sortNestedObjectsJSON = config.get<boolean>('json.sortNestedObjects', true)
+    const customKeyOrder = config.get<string[]>('json.customKeyOrder', [])
+    const groupBySchema = config.get<boolean>('json.groupBySchema', false)
+    const preserveCommentsJSON = config.get<boolean>('json.preserveComments', true)
+
     // Get formatting options
     const indentationType = config.get<'auto' | 'spaces' | 'tabs'>('formatting.indentationType', 'auto')
     const indentationSize = config.get<number>('formatting.indentationSize', 4)
@@ -264,6 +272,16 @@ async function handleSortCommand(
             groupByVisibility,
             sortInterfaceMethods,
             preserveMethodSets,
+            // JSON-specific options (will override general ones for JSON files)
+            sortObjectKeys,
+            preserveArrayOrder,
+            customKeyOrder,
+            groupBySchema,
+            // Use JSON-specific preserve comments setting if it's a JSON file
+            ...(editor.document.languageId === 'json' || editor.document.languageId === 'jsonc' ? {
+                sortNestedObjects: sortNestedObjectsJSON,
+                preserveComments: preserveCommentsJSON
+            } : {}),
         }
 
         // Process the file or selection

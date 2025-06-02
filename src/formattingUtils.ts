@@ -142,10 +142,43 @@ export function formatTrailingComma(
 ): string {
     switch (options.trailingCommas) {
         case 'add':
+            // If original has semicolon, preserve it (semicolons have different semantics)
+            if (originalPunctuation.includes(';')) {
+                return ';';
+            }
+            // Otherwise add comma
+            return ',';
+            
+        case 'remove':
             if (isLastProperty) {
-                return originalPunctuation.includes(';') ? ';' : ',';
+                return originalPunctuation.includes(';') ? ';' : '';
             }
             return originalPunctuation || ',';
+            
+        case 'preserve':
+        default:
+            return originalPunctuation;
+    }
+}
+
+/**
+ * Handles trailing comma formatting for interface and type properties specifically
+ * In interfaces and type aliases, semicolons and commas are interchangeable
+ * 
+ * @param options - Core processor options containing trailing comma preferences
+ * @param originalPunctuation - Original trailing punctuation
+ * @param isLastProperty - Whether this is the last property in the container
+ * @returns The formatted trailing punctuation
+ */
+export function formatTrailingCommaForInterface(
+    options: CoreProcessorOptions, 
+    originalPunctuation: string, 
+    isLastProperty: boolean
+): string {
+    switch (options.trailingCommas) {
+        case 'add':
+            // In interfaces and type aliases, always convert to commas when adding
+            return ',';
             
         case 'remove':
             if (isLastProperty) {

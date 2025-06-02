@@ -1,5 +1,84 @@
 # Changelog
 
+## [0.6.0]
+
+### Added
+
+- **JSON and JSONC Support**: Full support for sorting properties in JSON and JSONC (JSON with Comments) files
+- **JSON Object Property Sorting**: Alphabetical sorting of object keys in JSON files
+- **Array Order Preservation**: Configurable option to preserve or sort array elements (preserves by default)
+- **Nested JSON Object Sorting**: Recursive sorting support for deeply nested JSON structures
+- **JSONC Comment Preservation**: Maintains both single-line (`//`) and multi-line (`/* */`) comments in JSONC files
+- **Custom Key Ordering**: Allows custom property order for specific JSON schemas (e.g., package.json)
+- **Schema-Based Grouping**: Groups JSON properties by common patterns (metadata, required, optional)
+
+### JSON-Specific Configuration Options
+
+- `bulk-property-sorter.json.sortObjectKeys` (default: `true`) - Enable/disable object key sorting
+- `bulk-property-sorter.json.preserveArrayOrder` (default: `true`) - Preserve array element order
+- `bulk-property-sorter.json.sortNestedObjects` (default: `true`) - Enable recursive nested object sorting
+- `bulk-property-sorter.json.customKeyOrder` (default: `[]`) - Custom key order for specific schemas
+- `bulk-property-sorter.json.groupBySchema` (default: `false`) - Group properties by schema patterns
+- `bulk-property-sorter.json.preserveComments` (default: `true`) - Preserve comments in JSONC files
+
+### Supported JSON File Types
+
+- **Standard JSON** (`.json`) - Configuration files, API responses, data files
+- **JSONC** (`.jsonc`) - JSON with Comments for configuration files like VS Code settings
+- **Common Formats**: package.json, tsconfig.json, VS Code settings, API responses, configuration files
+
+### Examples
+
+**Package.json Optimization:**
+```json
+// Before
+{
+    "scripts": { "test": "jest", "build": "tsc" },
+    "name": "my-package", 
+    "version": "1.0.0",
+    "main": "./dist/index.js"
+}
+
+// After
+{
+    "main": "./dist/index.js",
+    "name": "my-package",
+    "scripts": { "build": "tsc", "test": "jest" },
+    "version": "1.0.0"
+}
+```
+
+**JSONC Comment Preservation:**
+```jsonc
+// Before
+{
+    "cache": { "enabled": true },
+    // Database configuration
+    "database": { "host": "localhost" }
+}
+
+// After
+{
+    "cache": { "enabled": true },
+    // Database configuration  
+    "database": { "host": "localhost" }
+}
+```
+
+### Technical Implementation
+
+- **JSON Parser**: New dedicated JSON/JSONC parser with comment extraction and preservation
+- **JSON Property Sorter**: Specialized sorter with custom key ordering and schema-based grouping
+- **JSON Reconstructor**: Advanced reconstructor that rebuilds JSON while preserving formatting and comments
+- **File Type Detection**: Automatic detection of JSON vs JSONC based on file extension and content
+- **Comprehensive Testing**: 160+ new tests covering all JSON parsing, sorting, and reconstruction scenarios
+
+## [0.5.1]
+
+### Fixed
+
+- **Package Size Optimization**: Reduced the size of the extension package by excluding unnecessary files and dependencies
+
 ## [0.5.0]
 
 ### Fixed

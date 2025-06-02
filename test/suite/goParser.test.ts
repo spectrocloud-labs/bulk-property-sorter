@@ -67,15 +67,16 @@ suite('GoParser Tests', () => {
         const entity = result.entities[0];
         assert.strictEqual(entity.properties.length, 3);
         
-        // Check comments are preserved
+        // Check leading comments (comments that appear above the field)
         assert.strictEqual(entity.properties[0].comments.length, 1);
         assert.strictEqual(entity.properties[0].comments[0].text, 'User identifier');
         
-        assert.strictEqual(entity.properties[1].comments.length, 1);
-        assert.strictEqual(entity.properties[1].comments[0].text, "User's full name");
+        // Check trailing comments (comments that appear on the same line as the field)
+        assert.strictEqual(entity.properties[1].trailingComments?.length, 1);
+        assert.strictEqual(entity.properties[1].trailingComments?.[0].text, "User's full name");
         
-        assert.strictEqual(entity.properties[2].comments.length, 1);
-        assert.strictEqual(entity.properties[2].comments[0].text, 'Contact email');
+        assert.strictEqual(entity.properties[2].trailingComments?.length, 1);
+        assert.strictEqual(entity.properties[2].trailingComments?.[0].text, 'Contact email');
     });
 
     test('should parse embedded fields', () => {

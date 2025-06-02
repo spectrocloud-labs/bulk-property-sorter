@@ -375,15 +375,16 @@ export class CSSParser {
             
             if (hasNestedRules) {
                 // Extract direct properties (not in nested rules)
-                const directProperties = this.extractDirectProperties(body, comments);
+                const originalBody = this.getOriginalBodyText(bodyStart, i - 1);
+                const directProperties = this.extractDirectProperties(body, comments, originalBody);
                 
                 if (directProperties.length > 0) {
                     const entity = this.createEntityFromPosition(selector, directProperties, selectorStart, i - 1, comments);
                     result.entities.push(entity);
                 }
                 
-                // Parse nested rules recursively - but only parse the nested rules, not the whole body
-                this.parseNestedRulesFromBody(body, comments, result, depth + 1);
+                // Parse nested rules recursively - pass the original body information for correct comment extraction
+                this.parseNestedRulesFromBodyWithOriginal(body, bodyStart, comments, result, depth + 1);
             } else {
                 // Simple rule with no nesting
                 const originalBody = this.getOriginalBodyText(bodyStart, i - 1);
@@ -398,9 +399,9 @@ export class CSSParser {
     }
 
     /**
-     * Parses nested rules from within a rule body
+     * Parses nested rules from within a rule body with original text preservation
      */
-    private parseNestedRulesFromBody(body: string, comments: PropertyComment[], result: ParseResult, depth: number): void {
+    private parseNestedRulesFromBodyWithOriginal(body: string, bodyStartPos: number, comments: PropertyComment[], result: ParseResult, depth: number): void {
         let i = 0;
         
         while (i < body.length) {
@@ -449,8 +450,13 @@ export class CSSParser {
                         if (braceCount === 0) {
                             const nestedBody = body.substring(nestedBodyStart, i - 1);
                             
-                            // Parse properties from the nested body
-                            const properties = this.parsePropertiesFromBody(nestedBody, comments, nestedBody);
+                            // Calculate the position in the original source for this nested body
+                            const originalNestedBodyStart = bodyStartPos + nestedBodyStart;
+                            const originalNestedBodyEnd = bodyStartPos + i - 1;
+                            const originalNestedBody = this.getOriginalBodyText(originalNestedBodyStart, originalNestedBodyEnd);
+                            
+                            // Parse properties from the nested body with original text
+                            const properties = this.parsePropertiesFromBody(nestedBody, comments, originalNestedBody);
                             
                             if (properties.length > 0) {
                                 const entity = this.createEntityFromPosition(selector, properties, 0, 0, comments);
@@ -459,7 +465,7 @@ export class CSSParser {
                             
                             // Recursively parse any further nested rules
                             if (nestedBody.includes('{')) {
-                                this.parseNestedRulesFromBody(nestedBody, comments, result, depth + 1);
+                                this.parseNestedRulesFromBodyWithOriginal(nestedBody, originalNestedBodyStart, comments, result, depth + 1);
                             }
                         }
                     }
@@ -474,6 +480,14 @@ export class CSSParser {
                 break;
             }
         }
+    }
+
+    /**
+     * Parses nested rules from within a rule body
+     */
+    private parseNestedRulesFromBody(body: string, comments: PropertyComment[], result: ParseResult, depth: number): void {
+        // This method is kept for backwards compatibility and now delegates to the improved version
+        this.parseNestedRulesFromBodyWithOriginal(body, 0, comments, result, depth);
     }
 
     /**
@@ -492,70 +506,76 @@ export class CSSParser {
     /**
      * Extracts direct properties from a rule body, excluding nested rules
      */
-    private extractDirectProperties(body: string, comments: PropertyComment[]): ParsedProperty[] {
+    private extractDirectProperties(body: string, comments: PropertyComment[], originalBody?: string): ParsedProperty[] {
         const properties: ParsedProperty[] = [];
         const usedComments = new Set<PropertyComment>();
         
-        // Parse character by character to handle both single-line and multi-line CSS
-        let i = 0;
-        let braceCount = 0;
-        let currentDeclaration = '';
+        // Use original body if provided for parsing (contains comments), otherwise use cleaned body
+        const bodyToParse = originalBody || body;
         
-        while (i < body.length) {
-            const char = body[i];
+        // Split by lines to properly handle trailing comments
+        const lines = bodyToParse.split('\n');
+        let currentLineInBody = 1;
+        let currentDeclaration = '';
+        let isInNestedRule = false;
+        let braceCount = 0;
+        
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            const trimmedLine = line.trim();
             
-            if (char === '{') {
-                braceCount++;
-                // If we're entering a nested rule, skip to the end of it
-                if (braceCount === 1) {
-                    // The currentDeclaration before the { is a selector, not a property
-                    currentDeclaration = '';
-                    
-                    // Find the matching closing brace
-                    let nestedBraceCount = 1;
-                    i++; // Skip the opening brace
-                    while (i < body.length && nestedBraceCount > 0) {
-                        if (body[i] === '{') {
-                            nestedBraceCount++;
-                        } else if (body[i] === '}') {
-                            nestedBraceCount--;
-                        }
-                        i++;
-                    }
-                    // Continue from after the nested rule
-                    continue;
-                }
+            // Skip empty lines
+            if (!trimmedLine) {
+                currentLineInBody++;
+                continue;
             }
             
-            if (char === '}') {
-                braceCount--;
-                if (braceCount < 0) {
-                    // We've reached the end of the current rule
-                    break;
-                }
+            // Track nested rules by counting braces
+            const openBraces = (line.match(/\{/g) || []).length;
+            const closeBraces = (line.match(/\}/g) || []).length;
+            braceCount += openBraces - closeBraces;
+            
+            // If we're inside a nested rule, skip this line
+            if (braceCount > 0) {
+                isInNestedRule = true;
+                currentLineInBody++;
+                continue;
+            } else if (isInNestedRule && braceCount === 0) {
+                // We just exited a nested rule
+                isInNestedRule = false;
+                currentDeclaration = '';
+                currentLineInBody++;
+                continue;
             }
             
-            // Only process properties when we're not inside a nested rule
-            if (braceCount === 0) {
-                if (char === ';' || char === '\n') {
-                    // End of a declaration
-                    const declaration = currentDeclaration.trim();
-                    if (declaration && this.isPropertyDeclaration(declaration)) {
-                        this.parsePropertyDeclaration(declaration, properties, comments, usedComments);
-                    }
-                    currentDeclaration = '';
-                } else {
-                    currentDeclaration += char;
+            // If the line ends with a semicolon, it's a complete declaration
+            if (trimmedLine.endsWith(';') || trimmedLine.includes(';')) {
+                // Add current line to declaration
+                currentDeclaration += (currentDeclaration ? ' ' : '') + trimmedLine;
+                
+                // Extract the declaration part (everything before the last semicolon on the line)
+                const declarationPart = currentDeclaration.substring(0, currentDeclaration.lastIndexOf(';'));
+                
+                if (declarationPart.trim() && this.isPropertyDeclaration(declarationPart.trim())) {
+                    // Use the full line (including potential trailing comments) as the declaration
+                    this.parsePropertyDeclarationWithLine(currentDeclaration.trim(), properties, comments, usedComments, currentLineInBody);
                 }
+                
+                currentDeclaration = '';
+            } else {
+                // Multi-line declaration, add to current declaration
+                currentDeclaration += (currentDeclaration ? ' ' : '') + trimmedLine;
             }
             
-            i++;
+            currentLineInBody++;
         }
         
         // Handle the last declaration if it doesn't end with a semicolon
-        const lastDeclaration = currentDeclaration.trim();
-        if (lastDeclaration && this.isPropertyDeclaration(lastDeclaration)) {
-            this.parsePropertyDeclaration(lastDeclaration, properties, comments, usedComments);
+        if (currentDeclaration.trim() && !isInNestedRule) {
+            const lastDeclaration = currentDeclaration.trim();
+            if (this.isPropertyDeclaration(lastDeclaration)) {
+                this.parsePropertyDeclarationWithLine(lastDeclaration, properties, comments, usedComments, currentLineInBody - 1);
+            }
         }
         
         return properties;
@@ -581,8 +601,21 @@ export class CSSParser {
         }
         
         // If the part before colon contains spaces or special selector characters, it's likely a selector
-        if (beforeColon.includes(' ') || beforeColon.includes('&') || beforeColon.includes('#') || beforeColon.includes('.')) {
+        // But exclude SCSS/SASS features like $variables and @directives
+        if (beforeColon.includes(' ') || (beforeColon.includes('&') && !beforeColon.startsWith('$')) || 
+            (beforeColon.includes('#') && !beforeColon.startsWith('$')) || 
+            (beforeColon.includes('.') && !beforeColon.startsWith('$'))) {
             return false;
+        }
+        
+        // If it's an SCSS/SASS variable (starts with $)
+        if (/^\$[a-zA-Z][a-zA-Z0-9-_]*$/.test(beforeColon)) {
+            return true;
+        }
+        
+        // If it's a SCSS/SASS/LESS @ directive variable
+        if (/^@[a-zA-Z][a-zA-Z0-9-_]*$/.test(beforeColon)) {
+            return true;
         }
         
         // If it looks like a CSS property name (letters, hyphens, maybe vendor prefix)
@@ -594,33 +627,82 @@ export class CSSParser {
     }
 
     /**
-     * Parses a single property declaration and adds it to the properties array
+     * Parses a single property declaration with explicit line number and adds it to the properties array
      */
-    private parsePropertyDeclaration(declaration: string, properties: ParsedProperty[], comments: PropertyComment[], usedComments: Set<PropertyComment> = new Set()): void {
+    private parsePropertyDeclarationWithLine(declaration: string, properties: ParsedProperty[], comments: PropertyComment[], usedComments: Set<PropertyComment> = new Set(), lineNumber: number): void {
         const propertyMatch = declaration.match(/^([^:]+):\s*(.+?)$/);
         if (!propertyMatch) {
             return;
         }
         
         const name = propertyMatch[1].trim();
-        const value = propertyMatch[2].trim();
+        let value = propertyMatch[2].trim();
+        
+        // Extract trailing comments directly from the declaration string
+        const trailingComments: PropertyComment[] = [];
+        
+        // Look for inline comments in the declaration (these are trailing comments)
+        // Find multi-line comments /* */ first
+        const multiLineRegex = /\/\*([^*]|\*(?!\/))*\*\//g;
+        let match;
+        while ((match = multiLineRegex.exec(declaration)) !== null) {
+            // Remove the comment from the value
+            value = value.replace(match[0], '').trim();
+            
+            const commentText = match[0].replace(/^\/\*\s*/, '').replace(/\s*\*\/$/, '').trim();
+            trailingComments.push({
+                text: commentText,
+                type: 'multi',
+                raw: match[0],
+                line: lineNumber
+            });
+        }
+        
+        // Find single-line comments // (for SCSS/SASS/LESS)
+        const singleLineRegex = /\/\/(.*)$/;
+        const singleLineMatch = declaration.match(singleLineRegex);
+        if (singleLineMatch) {
+            // Remove the comment from the value
+            value = value.replace(singleLineMatch[0], '').trim();
+            
+            const commentText = singleLineMatch[1].trim();
+            trailingComments.push({
+                text: commentText,
+                type: 'single',
+                raw: singleLineMatch[0],
+                line: lineNumber
+            });
+        }
+        
+        // Remove any trailing semicolons from the value after comment extraction
+        value = value.replace(/;\s*$/, '').trim();
         
         const important = value.includes('!important');
         const cleanValue = value.replace(/\s*!important\s*$/, '');
         const vendorPrefix = this.extractVendorPrefix(name);
-        const associatedComments = this.getPropertyComments(declaration, comments, usedComments);
         
-        properties.push({
+        // Only get property comments if we didn't find trailing comments in the declaration
+        // This prevents double association of comments
+        const associatedComments = trailingComments.length > 0 ? [] : this.getPropertyComments(declaration, comments, usedComments);
+        
+        const parsedProperty: ParsedProperty = {
             name,
             value: cleanValue,
             comments: associatedComments,
             optional: false,
-            line: this.currentLine,
+            line: lineNumber,
             fullText: declaration,
             trailingPunctuation: declaration.endsWith(';') ? ';' : '',
             important,
             vendorPrefix
-        });
+        };
+        
+        // Add trailing comments if they exist
+        if (trailingComments.length > 0) {
+            parsedProperty.trailingComments = trailingComments;
+        }
+        
+        properties.push(parsedProperty);
     }
 
     /**
@@ -666,8 +748,8 @@ export class CSSParser {
             const name = propertyMatch[1].trim();
             let value = propertyMatch[2].trim();
             
-            // Extract inline comments from the property line
-            const inlineComments: PropertyComment[] = [];
+            // Extract trailing comments from the property line (inline comments on the same line)
+            const trailingComments: PropertyComment[] = [];
             
             // Look for inline comments in the property line
             const commentMatches = trimmed.match(/\/\*.*?\*\/|\/\/.*$/g);
@@ -682,11 +764,11 @@ export class CSSParser {
                         raw: commentMatch,
                         line: lineIndex + 1 // Convert to 1-based line number
                     };
-                    inlineComments.push(comment);
+                    trailingComments.push(comment);
                 }
             }
             
-            // Look for standalone comments that appear before this property
+            // Look for standalone comments that appear before this property (these are leading comments)
             const standaloneComments: PropertyComment[] = [];
             
             // Check the lines immediately before this property for standalone comments
@@ -710,11 +792,28 @@ export class CSSParser {
                 
                 // If this is a comment line, check if it matches any of our global comments
                 if (prevLine.startsWith('/*') || prevLine.startsWith('//')) {
-                    // Find the matching global comment
-                    const matchingComment = globalComments.find(gc => 
-                        gc.raw === prevLine || 
-                        prevLine.includes(gc.raw)
-                    );
+                    // Find the matching global comment - be more flexible with whitespace matching
+                    const matchingComment = globalComments.find(gc => {
+                        // Try exact match first
+                        if (gc.raw === prevLine) {
+                            return true;
+                        }
+                        // Try trimmed match
+                        if (gc.raw.trim() === prevLine) {
+                            return true;
+                        }
+                        // Try content match (extract comment content and compare)
+                        const gcText = gc.raw.replace(/^\/\*|\*\/$/g, '').replace(/^\/\//, '').trim();
+                        const lineText = prevLine.replace(/^\/\*|\*\/$/g, '').replace(/^\/\//, '').trim();
+                        if (gcText === lineText) {
+                            return true;
+                        }
+                        // Try line inclusion
+                        if (prevLine.includes(gc.raw.trim())) {
+                            return true;
+                        }
+                        return false;
+                    });
                     
                     if (matchingComment) {
                         standaloneComments.unshift(matchingComment); // Add to beginning to maintain order
@@ -724,9 +823,6 @@ export class CSSParser {
                     break;
                 }
             }
-            
-            // Combine standalone comments and inline comments
-            const allComments = [...standaloneComments, ...inlineComments];
             
             // Check for !important (after removing comments)
             const important = value.includes('!important');
@@ -738,7 +834,7 @@ export class CSSParser {
             const property: ParsedProperty = {
                 name,
                 value: cleanValue,
-                comments: allComments,
+                comments: standaloneComments, // Only standalone comments go here (leading comments)
                 optional: false,
                 line: lineIndex + 1,
                 fullText: trimmed,
@@ -746,6 +842,11 @@ export class CSSParser {
                 important,
                 vendorPrefix
             };
+
+            // Add trailing comments if they exist
+            if (trailingComments.length > 0) {
+                property.trailingComments = trailingComments;
+            }
 
             properties.push(property);
         }
@@ -1115,5 +1216,50 @@ export class CSSParser {
                 errors: [...result.errors, `CSS sorting error: ${error instanceof Error ? error.message : String(error)}`]
             };
         }
+    }
+
+    /**
+     * Extracts trailing comments associated with a CSS property declaration
+     * 
+     * This method looks for comments that appear on the same line as a CSS property,
+     * after the property value or semicolon.
+     * 
+     * @param declaration - The property declaration string
+     * @param lineNumber - The line number of the declaration
+     * @returns Array of trailing comments found
+     */
+    private extractTrailingComments(declaration: string, lineNumber: number): PropertyComment[] {
+        const trailingComments: PropertyComment[] = [];
+        
+        // Look for comments after the property value/semicolon on the same line
+        // CSS supports both /* */ and // comments (in SCSS/SASS/LESS)
+        
+        // Find multi-line comments /* */ first
+        const multiLineRegex = /\/\*([^*]|\*(?!\/))*\*\//g;
+        let match;
+        while ((match = multiLineRegex.exec(declaration)) !== null) {
+            const commentText = match[0].replace(/^\/\*\s*/, '').replace(/\s*\*\/$/, '').trim();
+            trailingComments.push({
+                text: commentText,
+                type: 'multi',
+                raw: match[0],
+                line: lineNumber
+            });
+        }
+        
+        // Find single-line comments // (for SCSS/SASS/LESS)
+        const singleLineRegex = /\/\/(.*)$/;
+        const singleLineMatch = declaration.match(singleLineRegex);
+        if (singleLineMatch) {
+            const commentText = singleLineMatch[1].trim();
+            trailingComments.push({
+                text: commentText,
+                type: 'single',
+                raw: singleLineMatch[0],
+                line: lineNumber
+            });
+        }
+        
+        return trailingComments;
     }
 } 

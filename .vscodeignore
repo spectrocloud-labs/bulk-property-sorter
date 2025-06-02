@@ -13,3 +13,35 @@ vsc-extension-quickstart.md
 **/*.map
 **/*.ts
 **/.vscode-test.*
+
+# Exclude all dotfiles and directories starting with .
+.*
+!.vscodeignore
+
+# Exclude development and testing directories
+coverage/**
+docs/**
+test/**
+scripts/**
+tasks/**
+.cursor/**
+.nyc_output/**
+.github/**
+
+# Exclude performance and testing files
+performance-results.json
+test-report.json
+
+# Exclude configuration files not needed in production
+cursor-rules.json
+.env
+.env.example
+.nycrc.json
+.eslintrc.json
+.prettierrc.json
+.prettierignore
+.taskmasterconfig
+tsconfig.prod.json
+
+# Exclude build artifacts
+*.vsix

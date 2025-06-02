@@ -1,16 +1,19 @@
 import { TypeScriptParser } from './parser';
 import { CSSParser } from './cssParser';
 import { GoParser } from './goParser';
+import { JSONParser } from './jsonParser';
 import { PropertySorter } from './sorter';
 import { TypeScriptReconstructor, ReconstructorOptions } from './reconstructor';
 import { CSSReconstructor, CSSReconstructorOptions } from './cssReconstructor';
 import { GoReconstructor, GoReconstructorOptions } from './goReconstructor';
+import { JSONReconstructor, JSONReconstructorOptions } from './jsonReconstructor';
 import { ParseResult, ParsedEntity } from './types';
 import { resolveIndentation, resolveLineEnding, shouldIncludeComments } from './formattingUtils';
 import { 
     TypeScriptPropertySorter, 
     CSSPropertySorter, 
-    GoPropertySorter
+    GoPropertySorter,
+    JSONPropertySorter
 } from './languageSorters';
 
 /**
@@ -31,7 +34,7 @@ export interface CoreProcessorOptions {
     /** Whether to recursively sort nested object properties */
     sortNestedObjects: boolean;
     /** File type being processed */
-    fileType?: 'typescript' | 'javascript' | 'css' | 'scss' | 'sass' | 'less' | 'go';
+    fileType?: 'typescript' | 'javascript' | 'css' | 'scss' | 'sass' | 'less' | 'go' | 'json' | 'jsonc';
     /** CSS-specific: Whether to sort by property importance (!important first/last) */
     sortByImportance?: boolean;
     /** CSS-specific: Whether to group vendor-prefixed properties */
@@ -104,6 +107,14 @@ export interface CoreProcessorOptions {
     trailingCommas?: 'preserve' | 'add' | 'remove';
     /** Formatting: Add blank lines between property groups */
     blankLinesBetweenGroups?: boolean;
+    /** JSON-specific: Whether to sort object keys alphabetically */
+    sortObjectKeys?: boolean;
+    /** JSON-specific: Whether to preserve array order instead of sorting elements */
+    preserveArrayOrder?: boolean;
+    /** JSON-specific: Custom key order list for JSON objects */
+    customKeyOrder?: string[];
+    /** JSON-specific: Group properties by common schema patterns */
+    groupBySchema?: boolean;
 }
 
 /**
@@ -138,6 +149,8 @@ export class CoreProcessor {
     private cssParser: CSSParser;
     /** Go parser for extracting entities and properties from Go code */
     private goParser: GoParser;
+    /** JSON parser for extracting entities and properties from JSON code */
+    private jsonParser: JSONParser;
     /** Property sorter for organizing properties according to specified criteria */
     private sorter: PropertySorter;
     /** Language-specific TypeScript property sorter */
@@ -146,12 +159,16 @@ export class CoreProcessor {
     private cssLanguageSorter: CSSPropertySorter;
     /** Language-specific Go property sorter */
     private goLanguageSorter: GoPropertySorter;
+    /** Language-specific JSON property sorter */
+    private jsonLanguageSorter: JSONPropertySorter;
     /** Code reconstructor for rebuilding TypeScript code from sorted entities */
     private tsReconstructor: TypeScriptReconstructor;
     /** CSS reconstructor for rebuilding CSS code from sorted entities */
     private cssReconstructor: CSSReconstructor;
     /** Go reconstructor for rebuilding Go code from sorted entities */
     private goReconstructor: GoReconstructor;
+    /** JSON reconstructor for rebuilding JSON code from sorted entities */
+    private jsonReconstructor: JSONReconstructor;
 
     /**
      * Creates a new CoreProcessor with default component instances
@@ -175,13 +192,16 @@ export class CoreProcessor {
         this.tsParser = new TypeScriptParser();
         this.cssParser = new CSSParser();
         this.goParser = new GoParser();
+        this.jsonParser = new JSONParser();
         this.sorter = new PropertySorter();
         this.tsLanguageSorter = new TypeScriptPropertySorter();
         this.cssLanguageSorter = new CSSPropertySorter();
         this.goLanguageSorter = new GoPropertySorter();
+        this.jsonLanguageSorter = new JSONPropertySorter();
         this.tsReconstructor = new TypeScriptReconstructor();
         this.cssReconstructor = new CSSReconstructor();
         this.goReconstructor = new GoReconstructor();
+        this.jsonReconstructor = new JSONReconstructor();
     }
 
     /**
@@ -280,6 +300,17 @@ export class CoreProcessor {
                     };
                 }
                 
+                // For JSON/JSONC, empty objects or arrays are valid and should be processed successfully
+                if (fileType === 'json' || fileType === 'jsonc') {
+                    return {
+                        success: true,
+                        entitiesProcessed: parseResult.entities.length,
+                        errors: [],
+                        warnings: ['No properties found to sort, but JSON entities were processed'],
+                        processedText: text
+                    };
+                }
+                
                 // For TypeScript/JavaScript, empty interfaces/objects are considered no sortable entities
                 return {
                     success: false,
@@ -355,6 +386,10 @@ export class CoreProcessor {
             indentation = safeOptions.indentation;
         }
         
+        // File-type specific defaults for propertySpacing
+        const fileType = safeOptions.fileType || 'typescript';
+        const defaultPropertySpacing = (fileType === 'json' || fileType === 'jsonc') ? 'spaced' : 'compact';
+        
         return {
             sortOrder: 'asc',
             preserveFormatting: true,
@@ -375,13 +410,18 @@ export class CoreProcessor {
             groupByVisibility: true,
             sortInterfaceMethods: true,
             preserveMethodSets: false,
+            // JSON-specific defaults
+            sortObjectKeys: true,
+            preserveArrayOrder: true,
+            customKeyOrder: [],
+            groupBySchema: false,
             // Formatting options
             indentationType,
             indentationSize,
             lineEnding: 'auto',
             preserveComments: true,
             commentStyle: 'preserve',
-            propertySpacing: 'compact',
+            propertySpacing: defaultPropertySpacing,
             trailingCommas: 'preserve',
             blankLinesBetweenGroups: false,
             ...safeOptions
@@ -404,6 +444,10 @@ export class CoreProcessor {
             return this.cssParser.parse(text, fileName);
         } else if (fileType === 'go') {
             return this.goParser.parse(text);
+        } else if (fileType === 'json' || fileType === 'jsonc') {
+            // Pass a filename that matches the file type so the parser detects it correctly
+            const fileName = `temp.${fileType}`;
+            return this.jsonParser.parse(text, fileName);
         } else {
             return this.tsParser.parse(text);
         }
@@ -450,6 +494,13 @@ export class CoreProcessor {
             includeComments: resolvedIncludeComments,
             sortNestedObjects: options.sortNestedObjects,
             fileType: fileType as 'go'
+        });
+
+        this.jsonParser = new JSONParser({
+            preserveFormatting: options.preserveFormatting,
+            includeComments: resolvedIncludeComments,
+            sortNestedObjects: options.sortNestedObjects,
+            fileType: (fileType === 'json' || fileType === 'jsonc') ? fileType : 'json'
         });
 
         // Configure sorter
@@ -505,6 +556,23 @@ export class CoreProcessor {
             preserveMethodSets: options.preserveMethodSets
         });
 
+        this.jsonLanguageSorter = new JSONPropertySorter({
+            sortOrder: options.sortOrder,
+            sortNestedObjects: options.sortNestedObjects,
+            preserveFormatting: options.preserveFormatting,
+            includeComments: resolvedIncludeComments,
+            indentation: resolvedIndentation,
+            lineEnding: resolvedLineEnding,
+            commentStyle: options.commentStyle,
+            propertySpacing: options.propertySpacing,
+            trailingCommas: options.trailingCommas,
+            blankLinesBetweenGroups: options.blankLinesBetweenGroups,
+            sortObjectKeys: options.sortObjectKeys,
+            preserveArrayOrder: options.preserveArrayOrder,
+            customKeyOrder: options.customKeyOrder,
+            groupBySchema: options.groupBySchema
+        });
+
         // Configure reconstructors with resolved formatting options
         const tsReconstructorOptions: Partial<ReconstructorOptions> = {
             preserveFormatting: options.preserveFormatting,
@@ -534,6 +602,18 @@ export class CoreProcessor {
             indentation: resolvedIndentation
         };
         this.goReconstructor = new GoReconstructor(goReconstructorOptions);
+
+        const jsonReconstructorOptions: Partial<JSONReconstructorOptions> = {
+            preserveFormatting: options.preserveFormatting,
+            includeComments: resolvedIncludeComments,
+            indentation: resolvedIndentation,
+            lineEnding: resolvedLineEnding,
+            commentStyle: options.commentStyle,
+            propertySpacing: options.propertySpacing,
+            trailingCommas: options.trailingCommas,
+            blankLinesBetweenGroups: options.blankLinesBetweenGroups
+        };
+        this.jsonReconstructor = new JSONReconstructor(jsonReconstructorOptions);
     }
 
     /**
@@ -562,6 +642,12 @@ export class CoreProcessor {
                 ...entity,
                 properties: this.goLanguageSorter.sortProperties(entity.properties, entity)
             }));
+        } else if (fileType === 'json' || fileType === 'jsonc') {
+            // Use JSON language sorter
+            return entities.map(entity => ({
+                ...entity,
+                properties: this.jsonLanguageSorter.sortProperties(entity.properties, entity)
+            }));
         } else {
             // Use TypeScript language sorter for TypeScript and JavaScript
             return entities.map(entity => ({
@@ -589,6 +675,13 @@ export class CoreProcessor {
         for (let i = 0; i < originalEntities.length; i++) {
             const original = originalEntities[i];
             const sorted = sortedEntities[i];
+
+            // For JSON arrays, always assume changes are needed because sorting happens
+            // within nested objects inside array elements, which can't be detected by
+            // comparing top-level property names (which are just array indices like [0], [1])
+            if (original.type === 'json-array') {
+                return true;
+            }
 
             if (original.properties.length !== sorted.properties.length) {
                 return true;
@@ -628,6 +721,7 @@ export class CoreProcessor {
         const fileType = parseResult.fileType;
         const isCSS = fileType === 'css' || fileType === 'scss' || fileType === 'sass' || fileType === 'less';
         const isGo = fileType === 'go';
+        const isJSON = fileType === 'json' || fileType === 'jsonc';
 
         // For simple cases with single entities, use direct reconstruction
         if (sortedEntities.length === 1) {
@@ -635,6 +729,8 @@ export class CoreProcessor {
                 return this.cssReconstructor.reconstructEntity(sortedEntities[0]);
             } else if (isGo) {
                 return this.goReconstructor.reconstructEntity(sortedEntities[0]);
+            } else if (isJSON) {
+                return this.jsonReconstructor.reconstructEntity(sortedEntities[0]);
             } else {
                 return this.tsReconstructor.reconstructEntity(sortedEntities[0]);
             }
@@ -646,6 +742,8 @@ export class CoreProcessor {
             return this.cssReconstructor.reconstruct(originalText, parseResult, sortedEntities);
         } else if (isGo) {
             return this.reconstructMultipleGoEntities(originalText, parseResult, sortedEntities);
+        } else if (isJSON) {
+            return this.reconstructMultipleJSONEntities(originalText, parseResult, sortedEntities);
         } else {
             return this.reconstructMultipleEntities(originalText, parseResult, sortedEntities);
         }
@@ -748,6 +846,67 @@ export class CoreProcessor {
             if (sortedEntity) {
                 // Reconstruct this entity
                 const reconstructedEntity = this.goReconstructor.reconstructEntity(sortedEntity);
+                const reconstructedLines = reconstructedEntity.split('\n');
+                
+                // Calculate the actual start line including leading comments
+                // The entity's startLine/endLine don't include leading comments,
+                // but the reconstructed entity does include them, so we need to
+                // replace from the first comment line to avoid duplication
+                let actualStartLine = originalEntity.startLine;
+                if (originalEntity.leadingComments.length > 0) {
+                    // Find the earliest comment line
+                    const earliestCommentLine = Math.min(...originalEntity.leadingComments.map(c => c.line));
+                    actualStartLine = earliestCommentLine;
+                }
+                
+                // Replace the original entity lines (including comments) with reconstructed ones
+                const startIndex = actualStartLine - 1; // Convert to 0-based
+                const endIndex = originalEntity.endLine - 1;
+                const deleteCount = endIndex - startIndex + 1;
+                
+                lines.splice(startIndex, deleteCount, ...reconstructedLines);
+            }
+        }
+
+        return lines.join('\n');
+    }
+
+    /**
+     * Reconstructs code with multiple entities while preserving the original file structure
+     * 
+     * This method handles complex files containing multiple interfaces, objects, or type aliases
+     * by carefully replacing each entity in place while maintaining the overall file structure,
+     * imports, exports, and other non-entity code.
+     * 
+     * @param originalText - The original source code text
+     * @param parseResult - The complete parse result with entity positions
+     * @param sortedEntities - The entities with sorted properties to replace originals
+     * @returns Reconstructed code with all entities sorted but file structure preserved
+     */
+    private reconstructMultipleJSONEntities(
+        originalText: string,
+        parseResult: ParseResult,
+        sortedEntities: ParsedEntity[]
+    ): string {
+        const lines = originalText.split('\n');
+        const entityMap = new Map<string, ParsedEntity>();
+        
+        // Create a map of entities by their position for easy lookup
+        sortedEntities.forEach(entity => {
+            const key = `${entity.startLine}-${entity.endLine}-${entity.name}`;
+            entityMap.set(key, entity);
+        });
+
+        // Process entities in reverse order to avoid line number shifts
+        const sortedByPosition = [...parseResult.entities].sort((a, b) => b.startLine - a.startLine);
+
+        for (const originalEntity of sortedByPosition) {
+            const key = `${originalEntity.startLine}-${originalEntity.endLine}-${originalEntity.name}`;
+            const sortedEntity = entityMap.get(key);
+            
+            if (sortedEntity) {
+                // Reconstruct this entity
+                const reconstructedEntity = this.jsonReconstructor.reconstructEntity(sortedEntity);
                 const reconstructedLines = reconstructedEntity.split('\n');
                 
                 // Calculate the actual start line including leading comments

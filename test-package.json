@@ -1,0 +1,22 @@
+{
+  "name": "test-app",
+  "version": "1.0.0",
+  "zebra": "animal",
+  "author": "Test Author",
+  "banana": "fruit",
+  "scripts": {
+    "test": "echo test",
+    "build": "echo build",
+    "dev": "echo dev",
+    "start": "echo start"
+  },
+  "dependencies": {
+    "react": "^18.0.0",
+    "express": "^4.18.0",
+    "axios": "^1.4.0",
+    "lodash": "^4.17.21"
+  },
+  "apple": "fruit",
+  "main": "index.js",
+  "description": "A test application"
+} 
