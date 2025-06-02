@@ -1,0 +1,375 @@
+{
+  "name": "bulk-property-sorter",
+  "displayName": "Bulk Property Sorter",
+  "description": "VS Code extension that provides property sorting for TypeScript, JavaScript, CSS, SCSS, SASS, LESS, and Go files",
+  "version": "0.5.0",
+  "publisher": "spectro-cloud",
+  "engines": {
+    "vscode": "^1.83.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/spectrocloud/bulk-property-sorter.git"
+  },
+  "icon": "images/logo.png",
+  "categories": [
+    "Formatters",
+    "Other"
+  ],
+  "activationEvents": [
+    "onLanguage:typescript",
+    "onLanguage:typescriptreact",
+    "onLanguage:javascript",
+    "onLanguage:javascriptreact",
+    "onLanguage:css",
+    "onLanguage:scss",
+    "onLanguage:sass",
+    "onLanguage:less",
+    "onLanguage:go"
+  ],
+  "main": "./out/src/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "bulk-property-sorter.sortProperties",
+        "title": "Sort Properties (Ascending)",
+        "category": "Bulk Property Sorter"
+      },
+      {
+        "command": "bulk-property-sorter.sortPropertiesDescending",
+        "title": "Sort Properties (Descending)",
+        "category": "Bulk Property Sorter"
+      },
+      {
+        "command": "bulk-property-sorter.test",
+        "title": "Test Extension",
+        "category": "Bulk Property Sorter"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "bulk-property-sorter.sortProperties",
+        "key": "ctrl+[",
+        "mac": "cmd+[",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "bulk-property-sorter.sortPropertiesDescending",
+        "key": "ctrl+shift+[",
+        "mac": "cmd+shift+[",
+        "when": "editorTextFocus"
+      }
+    ],
+    "configuration": {
+      "title": "Bulk Property Sorter",
+      "properties": {
+        "bulk-property-sorter.excludedLanguages": {
+          "type": "array",
+          "default": [],
+          "description": "List of languages where the property sorter should be disabled."
+        },
+        "bulk-property-sorter.includedFilePatterns": {
+          "type": "array",
+          "default": [
+            "**/*"
+          ],
+          "description": "File patterns to include for property sorting (glob patterns)."
+        },
+        "bulk-property-sorter.excludedFilePatterns": {
+          "type": "array",
+          "default": [],
+          "description": "File patterns to exclude from property sorting (glob patterns)."
+        },
+        "bulk-property-sorter.sortNestedObjects": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable recursive sorting of properties in nested object declarations."
+        },
+        "bulk-property-sorter.showDescendingOption": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show the 'Sort Properties Descending' option in the context menu."
+        },
+        "bulk-property-sorter.css.groupVendorPrefixes": {
+          "type": "boolean",
+          "default": true,
+          "description": "Group vendor-prefixed properties together (e.g., -webkit-, -moz-)."
+        },
+        "bulk-property-sorter.css.sortByImportance": {
+          "type": "boolean",
+          "default": false,
+          "description": "Sort properties with !important declarations first."
+        },
+        "bulk-property-sorter.css.groupByCategory": {
+          "type": "boolean",
+          "default": false,
+          "description": "Group CSS properties by category (layout, typography, visual effects, etc.) before sorting alphabetically within each group."
+        },
+        "bulk-property-sorter.css.preserveMediaQueryOrder": {
+          "type": "boolean",
+          "default": true,
+          "description": "Preserve the original order of media queries instead of sorting them."
+        },
+        "bulk-property-sorter.css.sortNestedRules": {
+          "type": "boolean",
+          "default": true,
+          "description": "Sort nested rules in SCSS/SASS/LESS files (e.g., &:hover, &::before)."
+        },
+        "bulk-property-sorter.css.groupVariables": {
+          "type": "boolean",
+          "default": true,
+          "description": "Group CSS custom properties (variables) at the beginning of rule blocks."
+        },
+        "bulk-property-sorter.css.sortKeyframes": {
+          "type": "boolean",
+          "default": false,
+          "description": "Sort keyframe percentages in @keyframes rules (0%, 25%, 50%, 100%)."
+        },
+        "bulk-property-sorter.css.preserveVendorPrefixOrder": {
+          "type": "boolean",
+          "default": true,
+          "description": "Preserve the standard order of vendor prefixes (-webkit-, -moz-, -ms-, -o-, standard)."
+        },
+        "bulk-property-sorter.css.sortAtRules": {
+          "type": "boolean",
+          "default": false,
+          "description": "Sort @import, @use, @forward statements alphabetically in SCSS/SASS files."
+        },
+        "bulk-property-sorter.typescript.sortMethods": {
+          "type": "string",
+          "enum": [
+            "alphabetical",
+            "visibility",
+            "static-first",
+            "lifecycle"
+          ],
+          "default": "alphabetical",
+          "description": "Method sorting preference for TypeScript classes. 'alphabetical' sorts by name, 'visibility' groups by public/private/protected, 'static-first' puts static methods first, 'lifecycle' follows component lifecycle order."
+        },
+        "bulk-property-sorter.typescript.separateInterfacesAndClasses": {
+          "type": "boolean",
+          "default": false,
+          "description": "Handle interfaces and classes with different sorting rules when both are present in the same file."
+        },
+        "bulk-property-sorter.typescript.sortImportsExports": {
+          "type": "boolean",
+          "default": false,
+          "description": "Sort import and export statements alphabetically within their respective groups."
+        },
+        "bulk-property-sorter.typescript.groupImportsByType": {
+          "type": "boolean",
+          "default": true,
+          "description": "Group imports by type: external libraries, internal modules, relative imports."
+        },
+        "bulk-property-sorter.typescript.preserveMethodChaining": {
+          "type": "boolean",
+          "default": true,
+          "description": "Preserve method chaining order when sorting object properties that contain method calls."
+        },
+        "bulk-property-sorter.typescript.sortConstructorParameters": {
+          "type": "boolean",
+          "default": false,
+          "description": "Sort constructor parameters alphabetically while preserving dependency injection order."
+        },
+        "bulk-property-sorter.typescript.prioritizePublicMembers": {
+          "type": "boolean",
+          "default": false,
+          "description": "Sort public class members before private/protected members."
+        },
+        "bulk-property-sorter.go.sortStructFields": {
+          "type": "string",
+          "enum": [
+            "alphabetical",
+            "by-type",
+            "by-size",
+            "preserve-tags"
+          ],
+          "default": "alphabetical",
+          "description": "Struct field sorting preference. 'alphabetical' sorts by name, 'by-type' groups by field type, 'by-size' orders by memory size, 'preserve-tags' maintains fields with struct tags together."
+        },
+        "bulk-property-sorter.go.groupEmbeddedFields": {
+          "type": "boolean",
+          "default": true,
+          "description": "Group embedded (anonymous) struct fields at the beginning of struct definitions."
+        },
+        "bulk-property-sorter.go.sortMethodReceivers": {
+          "type": "boolean",
+          "default": false,
+          "description": "Sort methods by receiver type name when multiple receiver types are present in the same file."
+        },
+        "bulk-property-sorter.go.preserveStructTags": {
+          "type": "boolean",
+          "default": true,
+          "description": "Preserve struct tag formatting and order when sorting struct fields."
+        },
+        "bulk-property-sorter.go.groupByVisibility": {
+          "type": "boolean",
+          "default": false,
+          "description": "Group exported (public) fields before unexported (private) fields in struct definitions."
+        },
+        "bulk-property-sorter.go.sortInterfaceMethods": {
+          "type": "boolean",
+          "default": true,
+          "description": "Sort method signatures alphabetically within Go interface definitions."
+        },
+        "bulk-property-sorter.go.preserveMethodSets": {
+          "type": "boolean",
+          "default": false,
+          "description": "Keep related methods together based on common functionality patterns."
+        },
+        "bulk-property-sorter.sorting.caseSensitive": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable case-sensitive property sorting. When disabled, properties are sorted ignoring case differences."
+        },
+        "bulk-property-sorter.sorting.naturalSort": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable natural sort order for properties containing numbers (e.g., 'item2' comes before 'item10')."
+        },
+        "bulk-property-sorter.sorting.customOrder": {
+          "type": "array",
+          "default": [],
+          "description": "Custom property order list. Properties matching these names will be sorted first in the specified order.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "bulk-property-sorter.sorting.groupByType": {
+          "type": "boolean",
+          "default": false,
+          "description": "Group properties by their type (e.g., methods, properties, getters/setters) before sorting alphabetically within each group."
+        },
+        "bulk-property-sorter.sorting.prioritizeRequired": {
+          "type": "boolean",
+          "default": false,
+          "description": "Sort required properties (without '?' in TypeScript) before optional properties."
+        },
+        "bulk-property-sorter.formatting.indentationType": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "spaces",
+            "tabs"
+          ],
+          "default": "auto",
+          "description": "Indentation type to use. 'auto' detects from editor settings, 'spaces' uses spaces, 'tabs' uses tabs."
+        },
+        "bulk-property-sorter.formatting.indentationSize": {
+          "type": "number",
+          "default": 4,
+          "minimum": 1,
+          "maximum": 8,
+          "description": "Number of spaces to use for indentation when using spaces (ignored for tabs)."
+        },
+        "bulk-property-sorter.formatting.lineEnding": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "lf",
+            "crlf"
+          ],
+          "default": "auto",
+          "description": "Line ending style to use. 'auto' detects from file or uses platform default, 'lf' uses Unix-style (\\n), 'crlf' uses Windows-style (\\r\\n)."
+        },
+        "bulk-property-sorter.formatting.preserveComments": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to preserve comments in the output. When disabled, all comments are removed."
+        },
+        "bulk-property-sorter.formatting.commentStyle": {
+          "type": "string",
+          "enum": [
+            "preserve",
+            "single-line",
+            "multi-line"
+          ],
+          "default": "preserve",
+          "description": "Comment formatting style. 'preserve' keeps original style, 'single-line' converts to //, 'multi-line' converts to /* */."
+        },
+        "bulk-property-sorter.formatting.propertySpacing": {
+          "type": "string",
+          "enum": [
+            "compact",
+            "spaced",
+            "aligned"
+          ],
+          "default": "compact",
+          "description": "Property spacing style. 'compact' uses minimal spacing, 'spaced' adds space around colons, 'aligned' aligns property values."
+        },
+        "bulk-property-sorter.formatting.trailingCommas": {
+          "type": "string",
+          "enum": [
+            "preserve",
+            "add",
+            "remove"
+          ],
+          "default": "preserve",
+          "description": "Trailing comma handling. 'preserve' keeps original, 'add' ensures trailing commas, 'remove' removes trailing commas."
+        },
+        "bulk-property-sorter.formatting.blankLinesBetweenGroups": {
+          "type": "boolean",
+          "default": false,
+          "description": "Add blank lines between different property groups (when groupByType is enabled)."
+        }
+      }
+    },
+    "menus": {
+      "editor/context": [
+        {
+          "command": "bulk-property-sorter.sortProperties",
+          "group": "bulk-property-sorter",
+          "when": "editorTextFocus"
+        },
+        {
+          "command": "bulk-property-sorter.sortPropertiesDescending",
+          "group": "bulk-property-sorter",
+          "when": "editorTextFocus && config.bulk-property-sorter.showDescendingOption"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "tsc -p ./tsconfig.prod.json",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js",
+    "test:coverage": "nyc --reporter=lcov --reporter=html --reporter=text --reporter=json-summary npm test",
+    "test:performance": "npm test -- --grep \"Performance and Stress Tests\"",
+    "test:watch": "npm run compile && npm test -- --watch",
+    "coverage": "nyc report --reporter=html --reporter=text",
+    "coverage:check": "nyc check-coverage --lines 80 --functions 80 --branches 70 --statements 80",
+    "package": "npm run check-docs && npm run compile && npx vsce package --skip-license",
+    "check-docs": "node scripts/doc-checker.js",
+    "clean": "rimraf out coverage .nyc_output",
+    "report:performance": "npm run test:performance 2>&1 | node scripts/performance-reporter.js",
+    "ci:test": "npm run test:coverage && npm run report:performance",
+    "ci:report": "npm run coverage && npm run report:performance",
+    "test:report": "node scripts/test-reporter.js"
+  },
+  "dependencies": {
+    "typescript": "^5.2.2"
+  },
+  "devDependencies": {
+    "@istanbuljs/nyc-config-typescript": "^1.0.2",
+    "@types/mocha": "^10.0.2",
+    "@types/node": "18.x",
+    "@types/sinon": "^17.0.4",
+    "@types/vscode": "^1.83.0",
+    "@typescript-eslint/eslint-plugin": "^6.7.3",
+    "@typescript-eslint/parser": "^6.7.3",
+    "@vanilla-extract/css": "^1.17.1",
+    "@vscode/test-electron": "^2.3.4",
+    "@vscode/vsce": "^3.3.2",
+    "eslint": "^8.50.0",
+    "glob": "^10.3.3",
+    "mocha": "^10.2.0",
+    "nyc": "^17.1.0",
+    "rimraf": "^5.0.5",
+    "sinon": "^20.0.0",
+    "source-map-support": "^0.5.21",
+    "ts-node": "^10.9.2"
+  }
+}

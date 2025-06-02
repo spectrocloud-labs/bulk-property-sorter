@@ -1,0 +1,49 @@
+{
+  "timestamp": "2025-06-02T00:50:09.727Z",
+  "summary": {
+    "totalTests": 466,
+    "passedTests": 466,
+    "failedTests": 0,
+    "averageExecutionTime": 227.33333333333334,
+    "alertCount": 0,
+    "criticalAlerts": 0,
+    "warningAlerts": 0,
+    "performanceScore": 100
+  },
+  "benchmarks": {
+    "largeFileProcessing": {
+      "propertyCount": 5000,
+      "time": 16.96,
+      "throughput": 294811.320754717
+    },
+    "memoryUsage": {
+      "peak": 0.16
+    },
+    "memoryLeaks": {
+      "growth": -0.01
+    },
+    "stressTestDuplicates": {
+      "count": 10000,
+      "time": 3.23
+    },
+    "concurrentProcessing": {
+      "operations": 5,
+      "time": 41.86
+    },
+    "cpuUsage": {
+      "intensiveProcessing": 3.62
+    }
+  },
+  "thresholds": {
+    "largeFileProcessing": 2000,
+    "memoryLeakGrowth": 10,
+    "concurrentOperations": 5000,
+    "stressTestDuplicates": 500
+  },
+  "alerts": [],
+  "timings": [
+    188,
+    42,
+    452
+  ]
+}

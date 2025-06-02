@@ -1,0 +1,178 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Test and Coverage
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Lint code
+      run: npm run lint
+
+    - name: Run tests with coverage
+      run: npm run test:coverage
+
+    - name: Generate performance report
+      run: npm run report:performance
+
+    - name: Generate comprehensive test report
+      run: npm run test:report
+
+    - name: Check coverage thresholds
+      run: npm run coverage:check
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./coverage/lcov.info
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+
+    - name: Upload test reports as artifacts
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-reports-node-${{ matrix.node-version }}
+        path: |
+          coverage/
+          test-report.json
+          performance-results.json
+        retention-days: 30
+
+    - name: Comment PR with test results
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          
+          let testReport = '';
+          try {
+            const report = JSON.parse(fs.readFileSync('test-report.json', 'utf8'));
+            const health = report.summary.overallHealth;
+            const healthEmoji = {
+              'excellent': '🟢',
+              'good': '🟡', 
+              'fair': '🟠',
+              'poor': '🔴'
+            };
+            
+            testReport = `
+          ## ${healthEmoji[health]} Test Results (Node ${{ matrix.node-version }})
+          
+          **Overall Health:** ${health.toUpperCase()}
+          **Quality Gates:** ${report.summary.qualityGatesPassed}/${report.summary.qualityGatesTotal} passed
+          
+          | Metric | Status | Actual | Threshold |
+          |--------|--------|---------|-----------|
+          | Test Execution | ${report.qualityGates.testExecution.passed ? '✅' : '❌'} | ${report.qualityGates.testExecution.actual}% | ${report.qualityGates.testExecution.threshold}% |
+          | Code Coverage | ${report.qualityGates.codeCoverage.passed ? '✅' : '❌'} | ${report.qualityGates.codeCoverage.actual}% | ${report.qualityGates.codeCoverage.threshold}% |
+          | Performance | ${report.qualityGates.performanceBenchmarks.passed ? '✅' : '❌'} | ${report.qualityGates.performanceBenchmarks.actual}/100 | ${report.qualityGates.performanceBenchmarks.threshold}/100 |
+          | Critical Alerts | ${report.qualityGates.criticalAlerts.passed ? '✅' : '❌'} | ${report.qualityGates.criticalAlerts.actual} | ${report.qualityGates.criticalAlerts.threshold} |
+          
+          **Tests:** ${report.summary.testsPassing}/${report.summary.testsTotal} passing
+          **Coverage:** ${report.summary.coverageScore}% overall`;
+          
+            if (report.alerts && report.alerts.length > 0) {
+              testReport += '\n\n**🚨 Alerts:**\n';
+              report.alerts.forEach(alert => {
+                const emoji = alert.severity === 'error' ? '🔴' : '🟡';
+                testReport += `- ${emoji} ${alert.severity.toUpperCase()}: ${alert.message}\n`;
+              });
+            }
+            
+            if (report.recommendations && report.recommendations.length > 0) {
+              testReport += '\n\n**💡 Recommendations:**\n';
+              report.recommendations.forEach(rec => {
+                const emoji = rec.priority === 'critical' ? '🔴' : rec.priority === 'high' ? '🟠' : '🟡';
+                testReport += `- ${emoji} ${rec.priority.toUpperCase()} [${rec.category}]: ${rec.message}\n`;
+              });
+            }
+          } catch (error) {
+            testReport = `## Test Results (Node ${{ matrix.node-version }})\n\n❌ Failed to generate comprehensive test report: ${error.message}`;
+          }
+          
+          // Find existing comment
+          const { data: comments } = await github.rest.issues.listComments({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+          });
+          
+          const botComment = comments.find(comment => 
+            comment.user.type === 'Bot' && 
+            comment.body.includes(`Test Results (Node ${{ matrix.node-version }})`)
+          );
+          
+          if (botComment) {
+            await github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: botComment.id,
+              body: testReport
+            });
+          } else {
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: testReport
+            });
+          }
+
+  build:
+    name: Build and Package
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20.x
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build extension
+      run: npm run compile
+
+    - name: Check documentation
+      run: npm run check-docs
+
+    - name: Package extension
+      run: npm run package
+
+    - name: Upload VSIX package
+      uses: actions/upload-artifact@v4
+      with:
+        name: vsix-package
+        path: '*.vsix'
+        retention-days: 30 

@@ -1,0 +1,197 @@
+{
+  "version": 1,
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.js",
+    "**/*.jsx",
+    "**/*.json"
+  ],
+  "exclude": [
+    "node_modules/**",
+    "out/**",
+    ".vscode-test/**",
+    "coverage/**",
+    "dist/**"
+  ],
+  "analyzeJSON": true,
+  "additionalLanguages": [
+    "typescript",
+    "javascript",
+    "json",
+    "css"
+  ],
+  "rules": {
+    "ts": {
+      "lintMappings": {
+        "no-unused-vars": "error",
+        "no-undef": "error",
+        "max-len": ["warning", { "code": 100 }],
+        "semi": ["error", "always"],
+        "indent": ["warning", 4]
+      },
+      "customPatterns": [
+        {
+          "name": "Color Format Patterns",
+          "description": "Ensure proper color format detection patterns are used",
+          "pattern": "(hexColorPattern|rgbColorPattern|hslColorPattern)",
+          "severity": "info",
+          "filePattern": "src/utils\\.ts$"
+        },
+        {
+          "name": "VS Code API Usage",
+          "description": "Ensure proper VS Code API usage patterns",
+          "pattern": "vscode\\.(window|commands|workspace|languages)\\.",
+          "severity": "info",
+          "filePattern": "src/extension\\.ts$"
+        },
+        {
+          "name": "Color Parsing Function",
+          "description": "Ensure color parsing functions handle all formats",
+          "pattern": "parseColor\\(|findColorStringsInDocument\\(",
+          "severity": "info",
+          "filePattern": "src/utils\\.ts$"
+        },
+        {
+          "name": "Configuration Access",
+          "description": "Use consistent configuration access patterns",
+          "pattern": "getConfiguration\\('bulk-property-sorter'\\)",
+          "severity": "info",
+          "filePattern": "src/extension\\.ts$"
+        },
+        {
+          "name": "Color Manipulation Functions",
+          "description": "Verify color manipulation functions follow project patterns",
+          "pattern": "(lightenColor|darkenColor|saturateColor|desaturateColor|setColorOpacity)",
+          "severity": "info",
+          "filePattern": "src/utils\\.ts$"
+        },
+        {
+          "name": "JSDoc Comments",
+          "description": "Ensure comprehensive JSDoc comments for functions and interfaces",
+          "pattern": "/\\*\\*[\\s\\S]*?\\*/",
+          "severity": "info",
+          "filePattern": "\\.ts$"
+        },
+        {
+          "name": "Error Handling",
+          "description": "Ensure proper error handling with try/catch blocks",
+          "pattern": "try\\s*\\{[\\s\\S]*?\\}\\s*catch\\s*\\([^\\)]+\\)\\s*\\{",
+          "severity": "info",
+          "filePattern": "\\.ts$"
+        },
+        {
+          "name": "Event Handlers",
+          "description": "Ensure event handlers are properly registered and disposed",
+          "pattern": "onDidChange|addEventListener|on\\(",
+          "severity": "info",
+          "filePattern": "src/extension\\.ts$"
+        },
+        {
+          "name": "Disposable Registration",
+          "description": "Ensure all disposables are properly registered",
+          "pattern": "context\\.subscriptions\\.push\\(",
+          "severity": "warning",
+          "filePattern": "src/extension\\.ts$"
+        },
+        {
+          "name": "Package Configuration",
+          "description": "Verify package.json configuration matches extension capabilities",
+          "pattern": "\"activationEvents\"|\"contributes\":|\"commands\":|\"configuration\":",
+          "severity": "info",
+          "filePattern": "package\\.json$"
+        },
+        {
+          "name": "Color Tool Commands",
+          "description": "Check color tool command registration",
+          "pattern": "registerCommand\\('bulk-property-sorter\\.",
+          "severity": "info",
+          "filePattern": "src/extension\\.ts$"
+        },
+        {
+          "name": "Console Logging",
+          "description": "Ensure console logging is used appropriately for debugging",
+          "pattern": "console\\.(log|error|warn)\\(",
+          "severity": "info",
+          "filePattern": "\\.ts$"
+        },
+        {
+          "name": "Interface Definitions",
+          "description": "Ensure interfaces are properly defined with documentation",
+          "pattern": "interface\\s+\\w+\\s*\\{",
+          "severity": "info",
+          "filePattern": "\\.ts$"
+        },
+        {
+          "name": "Export Patterns",
+          "description": "Check for consistent export patterns",
+          "pattern": "export\\s+(function|const|interface|class)",
+          "severity": "info",
+          "filePattern": "\\.ts$"
+        },
+        {
+          "name": "Version Number Consistency",
+          "description": "Ensure version number in package.json matches the latest CHANGELOG entry",
+          "pattern": "\"version\":\\s*\"([0-9]+\\.[0-9]+\\.[0-9]+)\"",
+          "severity": "warning",
+          "filePattern": "package\\.json$"
+        },
+        {
+          "name": "CHANGELOG Update Required",
+          "description": "Remind to update CHANGELOG when changing behavior or fixing bugs",
+          "pattern": "(export\\s+function\\s+activate|commands\\.registerCommand|contributes)",
+          "severity": "warning",
+          "filePattern": "(src/extension\\.ts|package\\.json)$",
+          "message": "Significant changes detected. Remember to update CHANGELOG.md with new version and changes."
+        },
+        {
+          "name": "README Documentation",
+          "description": "Ensure README documents all features",
+          "pattern": "\"command\":\\s*\"bulk-property-sorter\\.([^\"]+)\"",
+          "severity": "warning",
+          "filePattern": "package\\.json$",
+          "message": "Command detected in package.json. Make sure it's documented in README.md"
+        },
+        {
+          "name": "Configuration Documentation",
+          "description": "Ensure README documents all configuration options",
+          "pattern": "\"bulk-property-sorter\\.([^\"]+)\":\\s*\\{",
+          "severity": "warning",
+          "filePattern": "package\\.json$",
+          "message": "Configuration option should be documented in README.md"
+        },
+        {
+          "name": "Changelog Entry Format",
+          "description": "Ensure CHANGELOG entries follow proper format",
+          "pattern": "## \\[[0-9]+\\.[0-9]+\\.[0-9]+\\]",
+          "severity": "info",
+          "filePattern": "CHANGELOG\\.md$"
+        },
+        {
+          "name": "README Features Section",
+          "description": "Ensure README has up-to-date features section",
+          "pattern": "## Features",
+          "severity": "info",
+          "filePattern": "README\\.md$"
+        }
+      ]
+    }
+  },
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "outDir": "out",
+    "rootDir": "src",
+    "sourceMap": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true
+  },
+  "organizationNotice": "Spectro Cloud VS Code Extension",
+  "maxTokens": 32000,
+  "buildConfigurations": {
+    "compile": "npm run compile",
+    "test": "npm run test",
+    "package": "npm run package"
+  }
+} 

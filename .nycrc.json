@@ -1,0 +1,26 @@
+{
+  "reporter": [
+    "text",
+    "html",
+    "lcov"
+  ],
+  "include": [
+    "out/src/**/*.js"
+  ],
+  "exclude": [
+    "out/test/**",
+    "out/**/*.test.js",
+    "**/*.d.ts",
+    "**/*.map"
+  ],
+  "sourceMap": false,
+  "instrument": true,
+  "cache": false,
+  "all": true,
+  "lines": 80,
+  "statements": 80,
+  "functions": 80,
+  "branches": 70,
+  "report-dir": "./coverage",
+  "temp-dir": "./.nyc_output"
+} 
