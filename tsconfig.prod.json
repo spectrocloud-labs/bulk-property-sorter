@@ -1,11 +1,22 @@
 {
   "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "sourceMap": false,
+    "target": "ES2022",
+    "removeComments": true,
+    "declaration": false,
+    "declarationMap": false,
+    "inlineSourceMap": false,
+    "inlineSources": false
+  },
   "include": [
     "src/**/*"
   ],
   "exclude": [
     "test/**/*",
     "node_modules",
-    "out"
+    "out",
+    "**/*.test.ts",
+    "**/*.spec.ts"
   ]
 } 

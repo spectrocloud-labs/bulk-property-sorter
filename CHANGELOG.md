@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.7.1]
+
+### Fixed
+
+- **Start-up Time**: Reduced extension start-up time by lazy loading heavy modules
+
 ## [0.7.0]
 
 ### Added

@@ -679,7 +679,7 @@ graph LR
 - **`includedFilePatterns`** (`string[]`, default: `["**/*"]`): File patterns to include for sorting (glob patterns)
 - **`excludedFilePatterns`** (`string[]`, default: `[]`): File patterns to exclude from sorting (glob patterns)
 - **`sortNestedObjects`** (`boolean`, default: `true`): Enable/disable recursive sorting of nested object properties
-- **`showDescendingOption`** (`boolean`, default: `false`): Show the "Sort Properties Descending" option in the context menu
+- **`showDescendingOption`** (`boolean`, default: `false`): Show the "Sort Properties Descending" option in the context menu (context menu items only appear for supported file types)
 
 #### Sorting Options
 

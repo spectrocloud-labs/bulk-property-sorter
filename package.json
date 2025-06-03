@@ -2,7 +2,7 @@
   "name": "bulk-property-sorter",
   "displayName": "Bulk Property Sorter",
   "description": "VS Code extension that provides bulk, recursive, and customizable property sorting for TypeScript, JavaScript, CSS, SCSS, SASS, LESS, JSON, YAML, and Go files",
-  "version": "0.6.0",
+  "version": "0.7.1",
   "publisher": "spectrocloud",
   "engines": {
     "vscode": "^1.83.0"
@@ -419,18 +419,19 @@
         {
           "command": "bulk-property-sorter.sortProperties",
           "group": "bulk-property-sorter",
-          "when": "editorTextFocus"
+          "when": "editorTextFocus && (resourceLangId == 'typescript' || resourceLangId == 'typescriptreact' || resourceLangId == 'javascript' || resourceLangId == 'javascriptreact' || resourceLangId == 'css' || resourceLangId == 'scss' || resourceLangId == 'sass' || resourceLangId == 'less' || resourceLangId == 'go' || resourceLangId == 'json' || resourceLangId == 'jsonc' || resourceLangId == 'yaml' || resourceLangId == 'yml')"
         },
         {
           "command": "bulk-property-sorter.sortPropertiesDescending",
           "group": "bulk-property-sorter",
-          "when": "editorTextFocus && config.bulk-property-sorter.showDescendingOption"
+          "when": "editorTextFocus && config.bulk-property-sorter.showDescendingOption && (resourceLangId == 'typescript' || resourceLangId == 'typescriptreact' || resourceLangId == 'javascript' || resourceLangId == 'javascriptreact' || resourceLangId == 'css' || resourceLangId == 'scss' || resourceLangId == 'sass' || resourceLangId == 'less' || resourceLangId == 'go' || resourceLangId == 'json' || resourceLangId == 'jsonc' || resourceLangId == 'yaml' || resourceLangId == 'yml')"
         }
       ]
     }
   },
   "scripts": {
-    "vscode:prepublish": "tsc -p ./tsconfig.prod.json",
+    "vscode:prepublish": "npm run build:prod",
+    "build:prod": "tsc -p ./tsconfig.prod.json",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
@@ -441,7 +442,7 @@
     "test:watch": "npm run compile && npm test -- --watch",
     "coverage": "nyc report --reporter=html --reporter=text",
     "coverage:check": "nyc check-coverage --lines 80 --functions 80 --branches 70 --statements 80",
-    "package": "npm run check-docs && npm run compile && npx vsce package --skip-license",
+    "package": "npm run check-docs && npm run build:prod && npx vsce package --skip-license",
     "check-docs": "node scripts/doc-checker.js",
     "clean": "rimraf out coverage .nyc_output",
     "report:performance": "npm run test:performance 2>&1 | node scripts/performance-reporter.js",

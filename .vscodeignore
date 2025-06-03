@@ -1,6 +1,7 @@
 .vscode/**
 .vscode-test/**
 node_modules/**
+!node_modules/js-yaml/**
 !node_modules/typescript/**
 src/**
 out/test/**
@@ -45,3 +46,4 @@ tsconfig.prod.json
 
 # Exclude build artifacts
 *.vsix
+.taskmaster/

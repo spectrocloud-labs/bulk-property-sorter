@@ -33,7 +33,7 @@ A VS Code extension that provides intelligent property sorting for TypeScript, J
 3. Use one of these methods:
    - Press `Ctrl+[` (or `Cmd+[` on Mac) for ascending sort
    - Press `Ctrl+Shift+[` (or `Cmd+Shift+[` on Mac) for descending sort
-   - Right-click and select "Sort Properties" from the context menu
+   - Right-click and select "Sort Properties" from the context menu (only appears for supported file types)
    - Open Command Palette (`Ctrl+Shift+P`) and search for "Sort Properties"
 
 ## Requirements
@@ -691,7 +691,7 @@ Both commands work on the entire file or just the selected text if you have a se
 
 ### Context Menu
 
-By default, only the "Sort Properties" command appears in the right-click context menu for a cleaner interface. To show the "Sort Properties Descending" option in the context menu as well, enable the `bulk-property-sorter.showDescendingOption` setting in your VS Code preferences.
+Context menu items are automatically shown only for supported file types (TypeScript, JavaScript, CSS, SCSS, SASS, LESS, Go, JSON, and YAML files). By default, only the "Sort Properties" command appears in the right-click context menu for a cleaner interface. To show the "Sort Properties Descending" option in the context menu as well, enable the `bulk-property-sorter.showDescendingOption` setting in your VS Code preferences.
 
 **Note:** Keyboard shortcuts for both commands remain available regardless of the context menu visibility setting.
 
