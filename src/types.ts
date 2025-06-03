@@ -72,7 +72,7 @@ export interface ParsedProperty {
  */
 export interface ParsedEntity {
     /** Type of entity */
-    type: 'interface' | 'object' | 'type' | 'css-rule' | 'css-keyframe' | 'css-media' | 'css-at-rule' | 'struct' | 'json-object' | 'json-array';
+    type: 'interface' | 'object' | 'type' | 'css-rule' | 'css-keyframe' | 'css-media' | 'css-at-rule' | 'struct' | 'json-object' | 'json-array' | 'yaml-object' | 'yaml-array';
     /** Name of the interface/variable/selector */
     name: string;
     /** Properties within this entity */
@@ -86,7 +86,7 @@ export interface ParsedEntity {
     /** Export modifier if present - TypeScript only */
     isExported: boolean;
     /** Original full text of the entity */
-    originalText: string;
+    originalText?: string;
     /** CSS-specific: Selector specificity for sorting rules */
     specificity?: number;
     /** CSS-specific: Media query conditions */
@@ -106,7 +106,7 @@ export interface ParseResult {
     /** Original source code */
     sourceCode: string;
     /** File type that was parsed */
-    fileType: 'typescript' | 'javascript' | 'css' | 'scss' | 'sass' | 'less' | 'go' | 'json' | 'jsonc';
+    fileType: 'typescript' | 'javascript' | 'css' | 'scss' | 'sass' | 'less' | 'go' | 'json' | 'jsonc' | 'yaml' | 'yml';
 }
 
 /**
@@ -122,7 +122,7 @@ export interface ParserOptions {
     /** Whether to recursively sort nested object properties */
     sortNestedObjects?: boolean;
     /** File type being parsed */
-    fileType?: 'typescript' | 'javascript' | 'css' | 'scss' | 'sass' | 'less' | 'go' | 'json' | 'jsonc';
+    fileType?: 'typescript' | 'javascript' | 'css' | 'scss' | 'sass' | 'less' | 'go' | 'json' | 'jsonc' | 'yaml' | 'yml';
     /** CSS-specific: Whether to sort by property importance (!important first/last) */
     sortByImportance?: boolean;
     /** CSS-specific: Whether to group vendor-prefixed properties */
@@ -139,4 +139,14 @@ export interface ParserOptions {
     customKeyOrder?: string[];
     /** JSON-specific: Group properties by common schema patterns */
     groupBySchema?: boolean;
+    /** YAML-specific: Whether to preserve YAML anchors (&anchor) and aliases (*alias) during sorting */
+    preserveAnchorsAndAliases?: boolean;
+    /** YAML-specific: Whether to preserve YAML document separators (---) and maintain multi-document structure */
+    preserveDocumentSeparators?: boolean;
+    /** YAML-specific: Whether to preserve YAML string folding styles (|, >, |-, >-) and quoting styles */
+    preserveStringStyles?: boolean;
+    /** YAML-specific: YAML indentation style ('auto', '2-spaces', '4-spaces') */
+    indentationStyle?: 'auto' | '2-spaces' | '4-spaces';
+    /** YAML-specific: Whether to handle complex keys (nested objects/arrays as keys) by preserving their structure during sorting */
+    handleComplexKeys?: boolean;
 } 

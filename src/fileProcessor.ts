@@ -223,7 +223,15 @@ export class FileProcessor {
             preserveArrayOrder: options.preserveArrayOrder,
             customKeyOrder: options.customKeyOrder,
             groupBySchema: options.groupBySchema,
-            preserveComments: options.preserveComments
+            preserveComments: options.preserveComments,
+            // YAML-specific options
+            preserveAnchorsAndAliases: options.preserveAnchorsAndAliases,
+            preserveDocumentSeparators: options.preserveDocumentSeparators,
+            preserveStringStyles: options.preserveStringStyles,
+            yamlIndentationStyle: options.yamlIndentationStyle,
+            handleComplexKeys: options.handleComplexKeys,
+            yamlCustomKeyOrder: options.yamlCustomKeyOrder,
+            yamlGroupBySchema: options.yamlGroupBySchema
         };
 
         return this.coreProcessor.processText(text, coreOptions);
@@ -235,7 +243,7 @@ export class FileProcessor {
      * @param document - The VS Code document to analyze
      * @returns The detected file type
      */
-    detectFileType(document: vscode.TextDocument): 'typescript' | 'javascript' | 'css' | 'scss' | 'sass' | 'less' | 'go' | 'json' | 'jsonc' {
+    detectFileType(document: vscode.TextDocument): 'typescript' | 'javascript' | 'css' | 'scss' | 'sass' | 'less' | 'go' | 'json' | 'jsonc' | 'yaml' {
         const languageId = document.languageId;
         
         switch (languageId) {
@@ -259,6 +267,9 @@ export class FileProcessor {
                 return 'json';
             case 'jsonc':
                 return 'jsonc';
+            case 'yaml':
+            case 'yml':
+                return 'yaml';
             default: {
                 // Fallback to filename extension
                 const fileName = document.fileName;
@@ -281,6 +292,9 @@ export class FileProcessor {
                     case 'js':
                     case 'jsx':
                         return 'javascript';
+                    case 'yaml':
+                    case 'yml':
+                        return 'yaml';
                     case 'ts':
                     case 'tsx':
                     default:

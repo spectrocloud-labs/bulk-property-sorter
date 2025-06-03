@@ -136,11 +136,11 @@ export class TypeScriptReconstructor {
         }
 
         // Determine if this is a function call pattern or direct assignment
-        const isFunctionCall = this.detectFunctionCallPattern(entity.originalText);
+        const isFunctionCall = entity.originalText ? this.detectFunctionCallPattern(entity.originalText) : false;
         
         // Object declaration line
         const exportKeyword = entity.isExported ? 'export ' : '';
-        if (isFunctionCall) {
+        if (isFunctionCall && entity.originalText) {
             const functionCall = this.extractFunctionCall(entity.originalText);
             // If functionCall has arguments, add comma; otherwise just add opening parenthesis
             if (functionCall.includes('(') && !functionCall.endsWith('(')) {

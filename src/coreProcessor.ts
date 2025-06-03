@@ -2,18 +2,21 @@ import { TypeScriptParser } from './parser';
 import { CSSParser } from './cssParser';
 import { GoParser } from './goParser';
 import { JSONParser } from './jsonParser';
+import { YAMLParser } from './yamlParser';
 import { PropertySorter } from './sorter';
 import { TypeScriptReconstructor, ReconstructorOptions } from './reconstructor';
 import { CSSReconstructor, CSSReconstructorOptions } from './cssReconstructor';
 import { GoReconstructor, GoReconstructorOptions } from './goReconstructor';
 import { JSONReconstructor, JSONReconstructorOptions } from './jsonReconstructor';
+import { YAMLReconstructor, YAMLReconstructorOptions } from './yamlReconstructor';
 import { ParseResult, ParsedEntity } from './types';
 import { resolveIndentation, resolveLineEnding, shouldIncludeComments } from './formattingUtils';
 import { 
     TypeScriptPropertySorter, 
     CSSPropertySorter, 
     GoPropertySorter,
-    JSONPropertySorter
+    JSONPropertySorter,
+    YAMLPropertySorter
 } from './languageSorters';
 
 /**
@@ -34,7 +37,7 @@ export interface CoreProcessorOptions {
     /** Whether to recursively sort nested object properties */
     sortNestedObjects: boolean;
     /** File type being processed */
-    fileType?: 'typescript' | 'javascript' | 'css' | 'scss' | 'sass' | 'less' | 'go' | 'json' | 'jsonc';
+    fileType?: 'typescript' | 'javascript' | 'css' | 'scss' | 'sass' | 'less' | 'go' | 'json' | 'jsonc' | 'yaml';
     /** CSS-specific: Whether to sort by property importance (!important first/last) */
     sortByImportance?: boolean;
     /** CSS-specific: Whether to group vendor-prefixed properties */
@@ -115,6 +118,20 @@ export interface CoreProcessorOptions {
     customKeyOrder?: string[];
     /** JSON-specific: Group properties by common schema patterns */
     groupBySchema?: boolean;
+    /** YAML-specific: Whether to preserve YAML anchors (&anchor) and aliases (*alias) during sorting */
+    preserveAnchorsAndAliases?: boolean;
+    /** YAML-specific: Whether to preserve YAML document separators (---) and maintain multi-document structure */
+    preserveDocumentSeparators?: boolean;
+    /** YAML-specific: Whether to preserve YAML string folding styles (|, >, |-, >-) and quoting styles */
+    preserveStringStyles?: boolean;
+    /** YAML-specific: YAML indentation style ('auto', '2-spaces', '4-spaces') */
+    yamlIndentationStyle?: 'auto' | '2-spaces' | '4-spaces';
+    /** YAML-specific: Whether to handle complex keys (nested objects/arrays as keys) by preserving their structure during sorting */
+    handleComplexKeys?: boolean;
+    /** YAML-specific: Custom key order list for YAML objects */
+    yamlCustomKeyOrder?: string[];
+    /** YAML-specific: Group properties by common schema patterns (Kubernetes, Docker Compose, etc.) */
+    yamlGroupBySchema?: boolean;
 }
 
 /**
@@ -151,6 +168,8 @@ export class CoreProcessor {
     private goParser: GoParser;
     /** JSON parser for extracting entities and properties from JSON code */
     private jsonParser: JSONParser;
+    /** YAML parser for extracting entities and properties from YAML code */
+    private yamlParser: YAMLParser;
     /** Property sorter for organizing properties according to specified criteria */
     private sorter: PropertySorter;
     /** Language-specific TypeScript property sorter */
@@ -161,6 +180,8 @@ export class CoreProcessor {
     private goLanguageSorter: GoPropertySorter;
     /** Language-specific JSON property sorter */
     private jsonLanguageSorter: JSONPropertySorter;
+    /** Language-specific YAML property sorter */
+    private yamlLanguageSorter: YAMLPropertySorter;
     /** Code reconstructor for rebuilding TypeScript code from sorted entities */
     private tsReconstructor: TypeScriptReconstructor;
     /** CSS reconstructor for rebuilding CSS code from sorted entities */
@@ -169,6 +190,8 @@ export class CoreProcessor {
     private goReconstructor: GoReconstructor;
     /** JSON reconstructor for rebuilding JSON code from sorted entities */
     private jsonReconstructor: JSONReconstructor;
+    /** YAML reconstructor for rebuilding YAML code from sorted entities */
+    private yamlReconstructor: YAMLReconstructor;
 
     /**
      * Creates a new CoreProcessor with default component instances
@@ -193,15 +216,18 @@ export class CoreProcessor {
         this.cssParser = new CSSParser();
         this.goParser = new GoParser();
         this.jsonParser = new JSONParser();
+        this.yamlParser = new YAMLParser();
         this.sorter = new PropertySorter();
         this.tsLanguageSorter = new TypeScriptPropertySorter();
         this.cssLanguageSorter = new CSSPropertySorter();
         this.goLanguageSorter = new GoPropertySorter();
         this.jsonLanguageSorter = new JSONPropertySorter();
+        this.yamlLanguageSorter = new YAMLPropertySorter();
         this.tsReconstructor = new TypeScriptReconstructor();
         this.cssReconstructor = new CSSReconstructor();
         this.goReconstructor = new GoReconstructor();
         this.jsonReconstructor = new JSONReconstructor();
+        this.yamlReconstructor = new YAMLReconstructor();
     }
 
     /**
@@ -415,6 +441,14 @@ export class CoreProcessor {
             preserveArrayOrder: true,
             customKeyOrder: [],
             groupBySchema: false,
+            // YAML-specific defaults
+            preserveAnchorsAndAliases: true,
+            preserveDocumentSeparators: true,
+            preserveStringStyles: true,
+            yamlIndentationStyle: 'auto',
+            handleComplexKeys: true,
+            yamlCustomKeyOrder: [],
+            yamlGroupBySchema: false,
             // Formatting options
             indentationType,
             indentationSize,
@@ -448,6 +482,8 @@ export class CoreProcessor {
             // Pass a filename that matches the file type so the parser detects it correctly
             const fileName = `temp.${fileType}`;
             return this.jsonParser.parse(text, fileName);
+        } else if (fileType === 'yaml') {
+            return this.yamlParser.parse(text);
         } else {
             return this.tsParser.parse(text);
         }
@@ -501,6 +537,13 @@ export class CoreProcessor {
             includeComments: resolvedIncludeComments,
             sortNestedObjects: options.sortNestedObjects,
             fileType: (fileType === 'json' || fileType === 'jsonc') ? fileType : 'json'
+        });
+
+        this.yamlParser = new YAMLParser({
+            preserveFormatting: options.preserveFormatting,
+            includeComments: resolvedIncludeComments,
+            sortNestedObjects: options.sortNestedObjects,
+            fileType: fileType as 'yaml'
         });
 
         // Configure sorter
@@ -573,6 +616,27 @@ export class CoreProcessor {
             groupBySchema: options.groupBySchema
         });
 
+        this.yamlLanguageSorter = new YAMLPropertySorter({
+            sortOrder: options.sortOrder,
+            sortNestedObjects: options.sortNestedObjects,
+            preserveFormatting: options.preserveFormatting,
+            includeComments: resolvedIncludeComments,
+            indentation: resolvedIndentation,
+            lineEnding: resolvedLineEnding,
+            commentStyle: options.commentStyle,
+            propertySpacing: options.propertySpacing,
+            blankLinesBetweenGroups: options.blankLinesBetweenGroups,
+            sortObjectKeys: options.sortObjectKeys,
+            preserveArrayOrder: options.preserveArrayOrder,
+            customKeyOrder: options.yamlCustomKeyOrder,
+            groupBySchema: options.yamlGroupBySchema,
+            preserveAnchorsAndAliases: options.preserveAnchorsAndAliases,
+            preserveDocumentSeparators: options.preserveDocumentSeparators,
+            preserveStringStyles: options.preserveStringStyles,
+            yamlIndentationStyle: options.yamlIndentationStyle,
+            handleComplexKeys: options.handleComplexKeys
+        });
+
         // Configure reconstructors with resolved formatting options
         const tsReconstructorOptions: Partial<ReconstructorOptions> = {
             preserveFormatting: options.preserveFormatting,
@@ -614,6 +678,22 @@ export class CoreProcessor {
             blankLinesBetweenGroups: options.blankLinesBetweenGroups
         };
         this.jsonReconstructor = new JSONReconstructor(jsonReconstructorOptions);
+
+        const yamlReconstructorOptions: Partial<YAMLReconstructorOptions> = {
+            preserveFormatting: options.preserveFormatting,
+            includeComments: resolvedIncludeComments,
+            indentation: resolvedIndentation,
+            lineEnding: resolvedLineEnding,
+            commentStyle: options.commentStyle,
+            propertySpacing: options.propertySpacing,
+            blankLinesBetweenGroups: options.blankLinesBetweenGroups,
+            preserveAnchorsAndAliases: options.preserveAnchorsAndAliases,
+            preserveDocumentSeparators: options.preserveDocumentSeparators,
+            preserveStringStyles: options.preserveStringStyles,
+            yamlIndentationStyle: options.yamlIndentationStyle,
+            handleComplexKeys: options.handleComplexKeys
+        };
+        this.yamlReconstructor = new YAMLReconstructor(yamlReconstructorOptions);
     }
 
     /**
@@ -647,6 +727,12 @@ export class CoreProcessor {
             return entities.map(entity => ({
                 ...entity,
                 properties: this.jsonLanguageSorter.sortProperties(entity.properties, entity)
+            }));
+        } else if (fileType === 'yaml') {
+            // Use YAML language sorter
+            return entities.map(entity => ({
+                ...entity,
+                properties: this.yamlLanguageSorter.sortProperties(entity.properties, entity)
             }));
         } else {
             // Use TypeScript language sorter for TypeScript and JavaScript
@@ -717,13 +803,12 @@ export class CoreProcessor {
             return originalText;
         }
 
-        // Determine which reconstructor to use based on file type
-        const fileType = parseResult.fileType;
-        const isCSS = fileType === 'css' || fileType === 'scss' || fileType === 'sass' || fileType === 'less';
-        const isGo = fileType === 'go';
-        const isJSON = fileType === 'json' || fileType === 'jsonc';
+        const isCSS = parseResult.fileType === 'css' || parseResult.fileType === 'scss' || parseResult.fileType === 'sass' || parseResult.fileType === 'less';
+        const isGo = parseResult.fileType === 'go';
+        const isJSON = parseResult.fileType === 'json' || parseResult.fileType === 'jsonc';
+        const isYAML = parseResult.fileType === 'yaml' || parseResult.fileType === 'yml';
 
-        // For simple cases with single entities, use direct reconstruction
+        // For single entity files, use the appropriate reconstructor directly
         if (sortedEntities.length === 1) {
             if (isCSS) {
                 return this.cssReconstructor.reconstructEntity(sortedEntities[0]);
@@ -731,6 +816,8 @@ export class CoreProcessor {
                 return this.goReconstructor.reconstructEntity(sortedEntities[0]);
             } else if (isJSON) {
                 return this.jsonReconstructor.reconstructEntity(sortedEntities[0]);
+            } else if (isYAML) {
+                return this.yamlReconstructor.reconstructEntity(sortedEntities[0]);
             } else {
                 return this.tsReconstructor.reconstructEntity(sortedEntities[0]);
             }
@@ -744,6 +831,8 @@ export class CoreProcessor {
             return this.reconstructMultipleGoEntities(originalText, parseResult, sortedEntities);
         } else if (isJSON) {
             return this.reconstructMultipleJSONEntities(originalText, parseResult, sortedEntities);
+        } else if (isYAML) {
+            return this.reconstructMultiDocumentYAML(originalText, parseResult, sortedEntities);
         } else {
             return this.reconstructMultipleEntities(originalText, parseResult, sortedEntities);
         }
@@ -930,6 +1019,61 @@ export class CoreProcessor {
         }
 
         return lines.join('\n');
+    }
+
+    /**
+     * Reconstructs multi-document YAML with sorted entities while preserving document structure
+     */
+    private reconstructMultiDocumentYAML(
+        originalText: string,
+        _parseResult: ParseResult,
+        sortedEntities: ParsedEntity[]
+    ): string {
+        // Create a map of entities by document index
+        const entitiesByDocument = new Map<number, ParsedEntity>();
+        sortedEntities.forEach(entity => {
+            // Extract document index from entity name (e.g., "document-0" -> 0)
+            const match = entity.name.match(/^document-(\d+)$/);
+            if (match) {
+                const docIndex = parseInt(match[1], 10);
+                entitiesByDocument.set(docIndex, entity);
+            }
+        });
+        
+        const reconstructedSections: string[] = [];
+        const lines = originalText.split('\n');
+        const documentSeparatorIndices: number[] = [];
+        
+        // Find all document separator lines
+        lines.forEach((line, index) => {
+            if (line.trim() === '---') {
+                documentSeparatorIndices.push(index);
+            }
+        });
+        
+        // Determine if the file starts with a document separator
+        const startsWithSeparator = documentSeparatorIndices.length > 0 && documentSeparatorIndices[0] === 0;
+        
+        // Process each document
+        const numDocuments = Math.max(entitiesByDocument.size, documentSeparatorIndices.length);
+        
+        for (let docIndex = 0; docIndex < numDocuments; docIndex++) {
+            const entity = entitiesByDocument.get(docIndex);
+            
+            if (entity) {
+                // Reconstruct this document's entity
+                const reconstructedEntity = this.yamlReconstructor.reconstructEntity(entity);
+                
+                // Add document separator if needed
+                if (docIndex > 0 || startsWithSeparator) {
+                    reconstructedSections.push('---');
+                }
+                
+                reconstructedSections.push(reconstructedEntity);
+            }
+        }
+        
+        return reconstructedSections.join('\n');
     }
 }
 

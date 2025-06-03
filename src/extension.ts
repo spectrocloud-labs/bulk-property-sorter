@@ -183,6 +183,19 @@ async function handleSortCommand(
     const groupBySchema = config.get<boolean>('json.groupBySchema', false)
     const preserveCommentsJSON = config.get<boolean>('json.preserveComments', true)
 
+    // Get YAML-specific options
+    const sortObjectKeysYAML = config.get<boolean>('yaml.sortObjectKeys', true)
+    const preserveArrayOrderYAML = config.get<boolean>('yaml.preserveArrayOrder', true)
+    const sortNestedObjectsYAML = config.get<boolean>('yaml.sortNestedObjects', true)
+    const customKeyOrderYAML = config.get<string[]>('yaml.customKeyOrder', [])
+    const groupBySchemaYAML = config.get<boolean>('yaml.groupBySchema', false)
+    const preserveCommentsYAML = config.get<boolean>('yaml.preserveComments', true)
+    const preserveAnchorsAndAliases = config.get<boolean>('yaml.preserveAnchorsAndAliases', true)
+    const preserveDocumentSeparators = config.get<boolean>('yaml.preserveDocumentSeparators', true)
+    const preserveStringStyles = config.get<boolean>('yaml.preserveStringStyles', true)
+    const yamlIndentationStyle = config.get<'auto' | '2-spaces' | '4-spaces'>('yaml.indentationStyle', 'auto')
+    const handleComplexKeys = config.get<boolean>('yaml.handleComplexKeys', true)
+
     // Get formatting options
     const indentationType = config.get<'auto' | 'spaces' | 'tabs'>('formatting.indentationType', 'auto')
     const indentationSize = config.get<number>('formatting.indentationSize', 4)
@@ -281,6 +294,23 @@ async function handleSortCommand(
             ...(editor.document.languageId === 'json' || editor.document.languageId === 'jsonc' ? {
                 sortNestedObjects: sortNestedObjectsJSON,
                 preserveComments: preserveCommentsJSON
+            } : {}),
+            // YAML-specific options (will override general ones for YAML files)
+            preserveAnchorsAndAliases,
+            preserveDocumentSeparators,
+            preserveStringStyles,
+            yamlIndentationStyle,
+            handleComplexKeys,
+            // Use YAML-specific options if it's a YAML file
+            ...(editor.document.languageId === 'yaml' || editor.document.languageId === 'yml' ? {
+                sortObjectKeys: sortObjectKeysYAML,
+                preserveArrayOrder: preserveArrayOrderYAML,
+                sortNestedObjects: sortNestedObjectsYAML,
+                customKeyOrder: customKeyOrderYAML,
+                groupBySchema: groupBySchemaYAML,
+                preserveComments: preserveCommentsYAML,
+                yamlCustomKeyOrder: customKeyOrderYAML,
+                yamlGroupBySchema: groupBySchemaYAML
             } : {}),
         }
 

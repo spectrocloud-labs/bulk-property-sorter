@@ -1,5 +1,34 @@
 # Changelog
 
+## [0.7.0]
+
+### Added
+
+- **YAML Support**: Comprehensive support for sorting properties in YAML and YML files
+- **Multi-Document YAML**: Support for YAML files with multiple documents separated by `---`
+- **YAML Anchor/Alias Preservation**: Maintains YAML anchors (`&anchor`) and aliases (`*alias`) during sorting
+- **Kubernetes/Docker Compose Optimization**: Custom key ordering for common YAML schemas
+- **YAML Comment Preservation**: Maintains YAML comments (`#`) with their associated properties
+- **Complex YAML Structures**: Support for nested objects, arrays, and complex data types in YAML
+
+### YAML-Specific Configuration Options
+
+- `bulk-property-sorter.yaml.sortObjectKeys` (default: `true`) - Enable/disable object key sorting
+- `bulk-property-sorter.yaml.preserveArrayOrder` (default: `true`) - Preserve array element order
+- `bulk-property-sorter.yaml.sortNestedObjects` (default: `true`) - Enable recursive nested object sorting
+- `bulk-property-sorter.yaml.preserveAnchorsAndAliases` (default: `true`) - Preserve YAML anchors and aliases
+- `bulk-property-sorter.yaml.preserveDocumentSeparators` (default: `true`) - Maintain multi-document structure
+- `bulk-property-sorter.yaml.preserveStringStyles` (default: `true`) - Preserve YAML string folding styles
+- `bulk-property-sorter.yaml.preserveComments` (default: `true`) - Preserve YAML comments
+- `bulk-property-sorter.yaml.indentationStyle` (default: `auto`) - Control YAML indentation (auto/2-spaces/4-spaces)
+- `bulk-property-sorter.yaml.handleComplexKeys` (default: `true`) - Handle complex keys (objects/arrays as keys)
+- `bulk-property-sorter.yaml.customKeyOrder` (default: `[]`) - Custom key order for specific schemas
+- `bulk-property-sorter.yaml.groupBySchema` (default: `false`) - Group properties by schema patterns
+
+### Supported YAML File Types
+
+- **YAML** (`.yaml`, `.yml`) - Configuration files, Kubernetes manifests, Docker Compose files
+
 ## [0.6.0]
 
 ### Added
@@ -65,13 +94,116 @@
 }
 ```
 
+**YAML Kubernetes Manifest Optimization:**
+```yaml
+# Before
+spec:
+  containers:
+    - name: app
+      image: nginx:latest
+metadata:
+  name: my-pod
+  labels:
+    app: web
+kind: Pod
+apiVersion: v1
+
+# After (with Kubernetes key order)
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: web
+  name: my-pod
+spec:
+  containers:
+    - image: nginx:latest
+      name: app
+```
+
+**YAML Comment Preservation:**
+```yaml
+# Before
+# Application configuration
+database:
+  host: localhost
+  port: 5432
+app:
+  # Application settings
+  name: MyApp
+  debug: false
+
+# After
+app:
+  # Application settings
+  debug: false
+  name: MyApp
+database:
+  host: localhost
+  port: 5432
+```
+
+**Multi-Document YAML:**
+```yaml
+# Before
+---
+# Kubernetes Pod manifest
+spec:
+  containers:
+    - name: web-server
+      image: nginx:1.20
+metadata:
+  name: web-pod
+  labels:
+    app: web
+kind: Pod
+apiVersion: v1
+---
+# Kubernetes Service manifest  
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+metadata:
+  name: web-service
+kind: Service
+apiVersion: v1
+
+# After (properties sorted within each document with Kubernetes key order)
+---
+# Kubernetes Pod manifest
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: web
+  name: web-pod
+spec:
+  containers:
+    - image: nginx:1.20
+      name: web-server
+---
+# Kubernetes Service manifest
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-service
+spec:
+  ports:
+    - port: 80
+  type: ClusterIP
+```
+
 ### Technical Implementation
 
 - **JSON Parser**: New dedicated JSON/JSONC parser with comment extraction and preservation
 - **JSON Property Sorter**: Specialized sorter with custom key ordering and schema-based grouping
 - **JSON Reconstructor**: Advanced reconstructor that rebuilds JSON while preserving formatting and comments
-- **File Type Detection**: Automatic detection of JSON vs JSONC based on file extension and content
-- **Comprehensive Testing**: 160+ new tests covering all JSON parsing, sorting, and reconstruction scenarios
+- **YAML Parser**: Comprehensive YAML parser supporting multi-document files, anchors/aliases, and complex structures
+- **YAML Property Sorter**: Specialized YAML sorter with Kubernetes/Docker Compose key ordering support
+- **YAML Reconstructor**: Advanced YAML reconstructor preserving formatting, comments, and YAML-specific features
+- **File Type Detection**: Automatic detection of JSON vs JSONC vs YAML based on file extension and content
+- **Comprehensive Testing**: 200+ new tests covering all JSON and YAML parsing, sorting, and reconstruction scenarios
 
 ## [0.5.1]
 

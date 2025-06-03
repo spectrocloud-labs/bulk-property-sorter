@@ -1,17 +1,18 @@
 # Bulk Property Sorter
 
-A VS Code extension that provides intelligent property sorting for TypeScript, JavaScript, CSS, SCSS, SASS, LESS, JSON, and Go files while preserving comments, formatting, and code structure.
+A VS Code extension that provides intelligent property sorting for TypeScript, JavaScript, CSS, SCSS, SASS, LESS, JSON, YAML, and Go files while preserving comments, formatting, and code structure.
 
 ## Features
 
-- **Multi-language Support**: Sort properties in TypeScript/JavaScript interfaces, object literals, CSS rules, JSON objects, and Go structs
+- **Multi-language Support**: Sort properties in TypeScript/JavaScript interfaces, object literals, CSS rules, JSON objects, YAML documents, and Go structs
 - **Smart Comment Preservation**: Maintains inline and block comments with their associated properties
 - **Recursive Nested Sorting**: Sort properties in nested object declarations and CSS rules (configurable)
 - **Spread Syntax Support**: Preserve object spread syntax (`...obj`) properties during sorting
 - **Semicolon Preservation**: Maintains original trailing punctuation style (semicolons, commas, or none) during sorting
 - **Vendor Prefix Handling**: Intelligent grouping of CSS vendor-prefixed properties
 - **Go Struct Tag Preservation**: Maintains complex Go struct tags exactly as written
-- **Format-aware Processing**: Respects different file formats (CSS, SCSS, SASS indented syntax, LESS)
+- **YAML-Specific Features**: Multi-document support, anchor/alias preservation, custom key ordering for Kubernetes/Docker Compose
+- **Format-aware Processing**: Respects different file formats (CSS, SCSS, SASS indented syntax, LESS, YAML)
 - **Configurable Sorting Options**: Extensive customization for different languages and use cases
 
 ## Installation
@@ -25,7 +26,7 @@ A VS Code extension that provides intelligent property sorting for TypeScript, J
 
 ## Usage
 
-1. Open a supported file type (TypeScript, JavaScript, CSS, SCSS, SASS, LESS, or Go)
+1. Open a supported file type (TypeScript, JavaScript, CSS, SCSS, SASS, LESS, JSON, YAML, or Go)
 2. Either:
    - Select specific text to sort just that selection
    - Place cursor anywhere to sort the entire file
@@ -38,7 +39,7 @@ A VS Code extension that provides intelligent property sorting for TypeScript, J
 ## Requirements
 
 - VS Code, Cursor, or any other editor that supports VS Code extensions
-- Files must be in a supported language (TypeScript, JavaScript, CSS, SCSS, SASS, LESS, Go)
+- Files must be in a supported language (TypeScript, JavaScript, CSS, SCSS, SASS, LESS, JSON, YAML, Go)
 
 ## Detailed Architecture Overview
 
@@ -459,6 +460,208 @@ type Order struct {
         "deploy"
     ]
 }
+```
+
+### YAML
+
+**Kubernetes Manifest Sorting with Custom Key Order:**
+```yaml
+# Before
+spec:
+  containers:
+    - name: app
+      image: nginx:latest
+      ports:
+        - containerPort: 80
+          protocol: TCP
+metadata:
+  name: my-pod
+  labels:
+    app: web
+    version: v1
+kind: Pod
+apiVersion: v1
+
+# After (with Kubernetes key order: apiVersion, kind, metadata, spec)
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: web
+    version: v1
+  name: my-pod
+spec:
+  containers:
+    - image: nginx:latest
+      name: app
+      ports:
+        - containerPort: 80
+          protocol: TCP
+```
+
+**Docker Compose File Sorting:**
+```yaml
+# Before
+version: '3.8'
+services:
+  web:
+    ports:
+      - "80:80"
+    image: nginx:latest
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - db
+  db:
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    image: postgres:13
+    environment:
+      POSTGRES_DB: myapp
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+
+# After (with nested sorting enabled)
+services:
+  db:
+    environment:
+      POSTGRES_DB: myapp
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: user
+    image: postgres:13
+    volumes:
+      - db_data:/var/lib/postgresql/data
+  web:
+    depends_on:
+      - db
+    environment:
+      - NODE_ENV=production
+    image: nginx:latest
+    ports:
+      - "80:80"
+version: '3.8'
+```
+
+**Configuration File with Comments:**
+```yaml
+# Before
+# Application configuration
+database:
+  # Database connection settings
+  host: localhost
+  port: 5432
+  name: myapp
+logging:
+  # Logging configuration
+  level: info
+  format: json
+app:
+  # Application settings
+  name: MyApp
+  version: 1.0.0
+  debug: false
+
+# After (with comment preservation)
+app:
+  # Application settings
+  debug: false
+  name: MyApp
+  version: 1.0.0
+database:
+  # Database connection settings
+  host: localhost
+  name: myapp
+  port: 5432
+logging:
+  # Logging configuration
+  format: json
+  level: info
+```
+
+**Multi-Document YAML:**
+```yaml
+# Before
+---
+# Kubernetes Pod manifest
+spec:
+  containers:
+    - name: web-server
+      image: nginx:1.20
+      ports:
+        - containerPort: 80
+metadata:
+  name: web-pod
+  labels:
+    environment: production
+    app: web
+kind: Pod
+apiVersion: v1
+---
+# Kubernetes Service manifest  
+spec:
+  selector:
+    app: web
+  ports:
+    - port: 80
+      targetPort: 80
+  type: ClusterIP
+metadata:
+  name: web-service
+kind: Service
+apiVersion: v1
+
+# After (properties sorted within each document)
+---
+# Kubernetes Pod manifest
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: web
+    environment: production
+  name: web-pod
+spec:
+  containers:
+    - image: nginx:1.20
+      name: web-server
+      ports:
+        - containerPort: 80
+---
+# Kubernetes Service manifest
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-service
+spec:
+  ports:
+    - port: 80
+      targetPort: 80
+  selector:
+    app: web
+  type: ClusterIP
+```
+
+**YAML with Anchors and Aliases:**
+```yaml
+# Before
+service:
+  <<: *defaults
+  name: api
+  port: 3000
+defaults: &defaults
+  timeout: 30
+  retries: 3
+  memory: 512Mi
+
+# After (with anchor/alias preservation)
+defaults: &defaults
+  memory: 512Mi
+  retries: 3
+  timeout: 30
+service:
+  <<: *defaults
+  name: api
+  port: 3000
 ```
 
 ## Configuration

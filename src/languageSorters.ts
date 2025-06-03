@@ -113,6 +113,48 @@ export interface JSONSortOptions {
 }
 
 /**
+ * Language-specific sorting options for YAML
+ */
+export interface YAMLSortOptions {
+    /** Sort order: ascending (A-Z) or descending (Z-A) */
+    sortOrder?: 'asc' | 'desc';
+    /** Whether to recursively sort nested object properties */
+    sortNestedObjects?: boolean;
+    /** Whether to preserve original formatting and whitespace */
+    preserveFormatting?: boolean;
+    /** Whether to include comments in the reconstructed output */
+    includeComments?: boolean;
+    /** Indentation string to use (spaces or tabs) */
+    indentation?: string;
+    /** Line ending style to use */
+    lineEnding?: string;
+    /** Comment style preference */
+    commentStyle?: 'preserve' | 'single-line' | 'multi-line';
+    /** Property spacing style */
+    propertySpacing?: 'compact' | 'spaced' | 'aligned';
+    /** Add blank lines between property groups */
+    blankLinesBetweenGroups?: boolean;
+    /** Whether to sort object keys alphabetically */
+    sortObjectKeys?: boolean;
+    /** Whether to preserve array order instead of sorting elements */
+    preserveArrayOrder?: boolean;
+    /** Custom key order list for YAML objects */
+    customKeyOrder?: string[];
+    /** Group properties by common schema patterns */
+    groupBySchema?: boolean;
+    /** Whether to preserve YAML anchors (&anchor) and aliases (*alias) during sorting */
+    preserveAnchorsAndAliases?: boolean;
+    /** Whether to preserve YAML document separators (---) and maintain multi-document structure */
+    preserveDocumentSeparators?: boolean;
+    /** Whether to preserve YAML string folding styles (|, >, |-, >-) and quoting styles */
+    preserveStringStyles?: boolean;
+    /** YAML indentation style ('auto', '2-spaces', '4-spaces') */
+    yamlIndentationStyle?: 'auto' | '2-spaces' | '4-spaces';
+    /** Whether to handle complex keys (nested objects/arrays as keys) by preserving their structure during sorting */
+    handleComplexKeys?: boolean;
+}
+
+/**
  * Combined language-specific sorting options
  */
 export interface LanguageSortOptions {
@@ -120,6 +162,7 @@ export interface LanguageSortOptions {
     css?: CSSSortOptions;
     go?: GoSortOptions;
     json?: JSONSortOptions;
+    yaml?: YAMLSortOptions;
 }
 
 /**
@@ -1236,12 +1279,276 @@ export class JSONPropertySorter {
 }
 
 /**
+ * YAML-specific property sorter
+ */
+export class YAMLPropertySorter {
+    private options: YAMLSortOptions;
+
+    constructor(options: YAMLSortOptions = {}) {
+        this.options = {
+            sortOrder: 'asc',
+            sortNestedObjects: false,
+            preserveFormatting: true,
+            includeComments: true,
+            indentation: '  ',
+            lineEnding: '\n',
+            commentStyle: 'preserve',
+            propertySpacing: 'spaced',
+            blankLinesBetweenGroups: false,
+            sortObjectKeys: true,
+            preserveArrayOrder: true,
+            customKeyOrder: [],
+            groupBySchema: false,
+            preserveAnchorsAndAliases: true,
+            preserveDocumentSeparators: true,
+            preserveStringStyles: true,
+            yamlIndentationStyle: 'auto',
+            handleComplexKeys: true,
+            ...options
+        };
+    }
+
+    /**
+     * Sort properties with YAML-specific logic
+     */
+    public sortProperties(properties: ParsedProperty[], entity?: ParsedEntity): ParsedProperty[] {
+        if (!properties || properties.length === 0) {
+            return properties;
+        }
+
+        // Create a copy to avoid mutating the original array
+        let sortedProperties = [...properties];
+
+        // Apply YAML-specific sorting based on entity type
+        if (entity) {
+            switch (entity.type) {
+                case 'yaml-object':
+                    sortedProperties = this.sortObjectProperties(sortedProperties);
+                    break;
+                case 'yaml-array':
+                    sortedProperties = this.sortArrayProperties(sortedProperties);
+                    break;
+                default:
+                    sortedProperties = this.sortGenericProperties(sortedProperties);
+            }
+        } else {
+            sortedProperties = this.sortGenericProperties(sortedProperties);
+        }
+
+        // Handle nested object sorting if enabled
+        if (this.options.sortNestedObjects) {
+            sortedProperties = this.sortNestedProperties(sortedProperties);
+        }
+
+        return sortedProperties;
+    }
+
+    /**
+     * Sort YAML object properties with custom key order and schema grouping
+     */
+    private sortObjectProperties(properties: ParsedProperty[]): ParsedProperty[] {
+        if (!this.options.sortObjectKeys) {
+            return properties;
+        }
+
+        const sorted = [...properties];
+
+        // Preserve anchors and aliases if enabled
+        if (this.options.preserveAnchorsAndAliases) {
+            const anchorsAndAliases = sorted.filter(prop => 
+                this.isAnchorOrAlias(prop.name) || this.isAnchorOrAlias(prop.value)
+            );
+            const regular = sorted.filter(prop => 
+                !this.isAnchorOrAlias(prop.name) && !this.isAnchorOrAlias(prop.value)
+            );
+            
+            // Sort regular properties and keep anchors/aliases at the top
+            const sortedRegular = this.applySortingLogic(regular);
+            return [...anchorsAndAliases, ...sortedRegular];
+        }
+
+        return this.applySortingLogic(sorted);
+    }
+
+    /**
+     * Sort YAML array properties (preserve order by default)
+     */
+    private sortArrayProperties(properties: ParsedProperty[]): ParsedProperty[] {
+        if (this.options.preserveArrayOrder) {
+            return properties; // Keep original order
+        }
+
+        // Sort array elements alphabetically if preserve order is disabled
+        return this.sortAlphabetically([...properties]);
+    }
+
+    /**
+     * Apply the main sorting logic (custom order, schema grouping, or alphabetical)
+     */
+    private applySortingLogic(properties: ParsedProperty[]): ParsedProperty[] {
+        // Apply custom key order if specified
+        if (this.options.customKeyOrder && this.options.customKeyOrder.length > 0) {
+            return this.applyCustomKeyOrder(properties);
+        }
+
+        // Group by schema patterns if enabled
+        if (this.options.groupBySchema) {
+            return this.groupBySchema(properties);
+        }
+
+        // Sort alphabetically as fallback
+        return this.sortAlphabetically(properties);
+    }
+
+    /**
+     * Check if a property name or value contains YAML anchors or aliases
+     */
+    private isAnchorOrAlias(text: string): boolean {
+        if (typeof text !== 'string') return false;
+        
+        // Check for anchors (&anchor) or aliases (*alias)
+        return /^&\w+$/.test(text) || /^\*\w+$/.test(text) || 
+               text.includes('&') || text.includes('*');
+    }
+
+    /**
+     * Apply custom key order to properties
+     */
+    private applyCustomKeyOrder(properties: ParsedProperty[]): ParsedProperty[] {
+        const customOrder = this.options.customKeyOrder || [];
+        const ordered: ParsedProperty[] = [];
+        const remaining: ParsedProperty[] = [];
+
+        // First, add properties in custom order
+        customOrder.forEach(key => {
+            const prop = properties.find(p => p.name === key);
+            if (prop) {
+                ordered.push(prop);
+            }
+        });
+
+        // Then add remaining properties alphabetically
+        properties.forEach(prop => {
+            if (!customOrder.includes(prop.name)) {
+                remaining.push(prop);
+            }
+        });
+
+        // Sort remaining properties alphabetically
+        remaining.sort((a, b) => {
+            const comparison = a.name.localeCompare(b.name);
+            return this.options.sortOrder === 'desc' ? -comparison : comparison;
+        });
+
+        return [...ordered, ...remaining];
+    }
+
+    /**
+     * Group properties by common YAML schema patterns
+     */
+    private groupBySchema(properties: ParsedProperty[]): ParsedProperty[] {
+        const groups = {
+            metadata: [] as ParsedProperty[], // version, apiVersion, kind, etc.
+            identification: [] as ParsedProperty[], // name, namespace, labels, etc.
+            specification: [] as ParsedProperty[], // spec, data, etc.
+            status: [] as ParsedProperty[], // status, conditions, etc.
+            other: [] as ParsedProperty[] // everything else
+        };
+
+        // Common YAML metadata keys (Kubernetes, Docker Compose, etc.)
+        const metadataKeys = ['apiVersion', 'kind', 'version', 'schema'];
+        // Common identification keys
+        const identificationKeys = ['name', 'namespace', 'labels', 'annotations'];
+        // Common specification keys
+        const specificationKeys = ['spec', 'data', 'stringData', 'rules', 'template'];
+        // Common status keys
+        const statusKeys = ['status', 'conditions', 'phase', 'ready'];
+
+        properties.forEach(prop => {
+            if (metadataKeys.includes(prop.name)) {
+                groups.metadata.push(prop);
+            } else if (identificationKeys.includes(prop.name)) {
+                groups.identification.push(prop);
+            } else if (specificationKeys.includes(prop.name)) {
+                groups.specification.push(prop);
+            } else if (statusKeys.includes(prop.name)) {
+                groups.status.push(prop);
+            } else {
+                groups.other.push(prop);
+            }
+        });
+
+        // Sort each group alphabetically
+        Object.values(groups).forEach(group => {
+            group.sort((a, b) => {
+                const comparison = a.name.localeCompare(b.name);
+                return this.options.sortOrder === 'desc' ? -comparison : comparison;
+            });
+        });
+
+        return [
+            ...groups.metadata,
+            ...groups.identification,
+            ...groups.specification,
+            ...groups.status,
+            ...groups.other
+        ];
+    }
+
+    /**
+     * Sort properties alphabetically
+     */
+    private sortAlphabetically(properties: ParsedProperty[]): ParsedProperty[] {
+        return properties.sort((a, b) => {
+            const comparison = a.name.localeCompare(b.name);
+            return this.options.sortOrder === 'desc' ? -comparison : comparison;
+        });
+    }
+
+    /**
+     * Sort nested properties recursively
+     */
+    private sortNestedProperties(properties: ParsedProperty[]): ParsedProperty[] {
+        return properties.map(prop => {
+            if (prop.nestedProperties && prop.nestedProperties.length > 0) {
+                return {
+                    ...prop,
+                    nestedProperties: this.sortProperties(prop.nestedProperties)
+                };
+            }
+            return prop;
+        });
+    }
+
+    /**
+     * Sort generic properties (fallback)
+     */
+    private sortGenericProperties(properties: ParsedProperty[]): ParsedProperty[] {
+        return this.sortAlphabetically([...properties]);
+    }
+
+    /**
+     * Update sorting options
+     */
+    public updateOptions(newOptions: Partial<YAMLSortOptions>): void {
+        this.options = { ...this.options, ...newOptions };
+    }
+
+    /**
+     * Get current sorting options
+     */
+    public getOptions(): YAMLSortOptions {
+        return { ...this.options };
+    }
+}
+
+/**
  * Factory function to create language-specific sorters
  */
 export function createLanguageSorter(
-    language: 'typescript' | 'css' | 'go' | 'json',
+    language: 'typescript' | 'css' | 'go' | 'json' | 'yaml',
     options: LanguageSortOptions = {}
-): TypeScriptPropertySorter | CSSPropertySorter | GoPropertySorter | JSONPropertySorter {
+): TypeScriptPropertySorter | CSSPropertySorter | GoPropertySorter | JSONPropertySorter | YAMLPropertySorter {
     switch (language) {
         case 'typescript':
             return new TypeScriptPropertySorter(options.typescript);
@@ -1251,6 +1558,8 @@ export function createLanguageSorter(
             return new GoPropertySorter(options.go);
         case 'json':
             return new JSONPropertySorter(options.json);
+        case 'yaml':
+            return new YAMLPropertySorter(options.yaml);
         default:
             throw new Error(`Unsupported language: ${language}`);
     }

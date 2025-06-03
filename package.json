@@ -1,7 +1,7 @@
 {
   "name": "bulk-property-sorter",
   "displayName": "Bulk Property Sorter",
-  "description": "VS Code extension that provides bulk, recursive, and customizable property sorting for TypeScript, JavaScript, CSS, SCSS, SASS, LESS, JSON, and Go files",
+  "description": "VS Code extension that provides bulk, recursive, and customizable property sorting for TypeScript, JavaScript, CSS, SCSS, SASS, LESS, JSON, YAML, and Go files",
   "version": "0.6.0",
   "publisher": "spectrocloud",
   "engines": {
@@ -27,7 +27,9 @@
     "onLanguage:less",
     "onLanguage:go",
     "onLanguage:json",
-    "onLanguage:jsonc"
+    "onLanguage:jsonc",
+    "onLanguage:yaml",
+    "onLanguage:yml"
   ],
   "main": "./out/src/extension.js",
   "contributes": {
@@ -346,6 +348,69 @@
           "type": "boolean",
           "default": false,
           "description": "Add blank lines between different property groups (when groupByType is enabled)."
+        },
+        "bulk-property-sorter.yaml.sortObjectKeys": {
+          "type": "boolean",
+          "default": true,
+          "description": "Sort object keys alphabetically in YAML files."
+        },
+        "bulk-property-sorter.yaml.preserveArrayOrder": {
+          "type": "boolean",
+          "default": true,
+          "description": "Preserve the original order of array elements instead of sorting them."
+        },
+        "bulk-property-sorter.yaml.sortNestedObjects": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable recursive sorting of properties in nested YAML objects."
+        },
+        "bulk-property-sorter.yaml.preserveAnchorsAndAliases": {
+          "type": "boolean",
+          "default": true,
+          "description": "Preserve YAML anchors (&anchor) and aliases (*alias) during sorting."
+        },
+        "bulk-property-sorter.yaml.preserveDocumentSeparators": {
+          "type": "boolean",
+          "default": true,
+          "description": "Preserve YAML document separators (---) and maintain multi-document structure."
+        },
+        "bulk-property-sorter.yaml.preserveStringStyles": {
+          "type": "boolean",
+          "default": true,
+          "description": "Preserve YAML string folding styles (|, >, |-, >-) and quoting styles."
+        },
+        "bulk-property-sorter.yaml.preserveComments": {
+          "type": "boolean",
+          "default": true,
+          "description": "Preserve comments in YAML files during sorting."
+        },
+        "bulk-property-sorter.yaml.indentationStyle": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "2-spaces",
+            "4-spaces"
+          ],
+          "default": "auto",
+          "description": "YAML indentation style. 'auto' detects from file, '2-spaces' uses 2 spaces, '4-spaces' uses 4 spaces."
+        },
+        "bulk-property-sorter.yaml.handleComplexKeys": {
+          "type": "boolean",
+          "default": true,
+          "description": "Handle complex keys (nested objects/arrays as keys) by preserving their structure during sorting."
+        },
+        "bulk-property-sorter.yaml.customKeyOrder": {
+          "type": "array",
+          "default": [],
+          "description": "Custom key order list for YAML objects. Keys matching these names will be sorted first in the specified order (e.g., ['apiVersion', 'kind', 'metadata', 'spec']).",
+          "items": {
+            "type": "string"
+          }
+        },
+        "bulk-property-sorter.yaml.groupBySchema": {
+          "type": "boolean",
+          "default": false,
+          "description": "Group YAML properties by common schema patterns (e.g., Kubernetes: apiVersion/kind → metadata → spec → status, Docker Compose: version → services → networks/volumes)."
         }
       }
     },
@@ -370,7 +435,7 @@
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js",
+    "test": "npm run compile && node ./out/test/runTest.js",
     "test:coverage": "nyc --reporter=lcov --reporter=html --reporter=text --reporter=json-summary npm test",
     "test:performance": "npm test -- --grep \"Performance and Stress Tests\"",
     "test:watch": "npm run compile && npm test -- --watch",
@@ -385,10 +450,12 @@
     "test:report": "node scripts/test-reporter.js"
   },
   "dependencies": {
+    "js-yaml": "~4.1.0",
     "typescript": "^5.2.2"
   },
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
+    "@types/js-yaml": "^4.0.9",
     "@types/mocha": "^10.0.2",
     "@types/node": "18.x",
     "@types/sinon": "^17.0.4",
