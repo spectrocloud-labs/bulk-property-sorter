@@ -44,15 +44,7 @@ TODO
 
 ## Commands
 
-- **Sort Properties** (`spectro-tab-tools.sortProperties`) 
-  - **Shortcut**: `Ctrl+[` / `Cmd+[`
-  - Sort properties in ascending order (A-Z)
-
-- **Sort Properties Descending** (`spectro-tab-tools.sortPropertiesDescending`)
-  - **Shortcut**: `Ctrl+Shift+[` / `Cmd+Shift+[`
-  - Sort properties in descending order (Z-A)
-
-Both commands work on the entire file or just the selected text if you have a selection.
+TODO
 
 ### Context Menu
 

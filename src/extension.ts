@@ -1,8 +1,12 @@
 import * as vscode from 'vscode'
 import { TabManager } from './tabManager'
+import { NavigationInterceptor } from './navigationInterceptor'
 
 // Global TabManager instance
 let tabManager: TabManager | undefined
+
+// Global NavigationInterceptor instance
+let navigationInterceptor: NavigationInterceptor | undefined
 
 // Lazy-loaded modules cache
 // let fileProcessorModule: typeof import('./fileProcessor') | undefined;
@@ -50,15 +54,23 @@ export function activate(context: vscode.ExtensionContext) {
     console.log('Spectro Tab Tools: Initializing TabManager...')
     tabManager = new TabManager()
     
-    // Initialize TabManager and add to disposables for cleanup
+    // Initialize NavigationInterceptor after TabManager is ready
+    console.log('Spectro Tab Tools: Initializing NavigationInterceptor...')
+    navigationInterceptor = new NavigationInterceptor(tabManager)
+    
+    // Initialize both TabManager and NavigationInterceptor
     tabManager.initialize().then(() => {
         console.log('Spectro Tab Tools: TabManager initialized successfully')
+        return navigationInterceptor!.initialize()
+    }).then(() => {
+        console.log('Spectro Tab Tools: NavigationInterceptor initialized successfully')
     }).catch(error => {
-        console.error('Spectro Tab Tools: Failed to initialize TabManager:', error)
+        console.error('Spectro Tab Tools: Failed to initialize TabManager or NavigationInterceptor:', error)
     })
     
     // Add TabManager to disposables for proper cleanup
     context.subscriptions.push(tabManager)
+    context.subscriptions.push(navigationInterceptor)
     
     // Register essential commands (always registered for immediate availability)
     console.log('Spectro Tab Tools: Registering essential commands...')
@@ -360,6 +372,13 @@ export function deactivate() {
         console.log('Spectro Tab Tools: Disposing TabManager...')
         tabManager.dispose()
         tabManager = undefined
+    }
+
+    // Clean up NavigationInterceptor
+    if (navigationInterceptor) {
+        console.log('Spectro Tab Tools: Disposing NavigationInterceptor...')
+        navigationInterceptor.dispose()
+        navigationInterceptor = undefined
     }
 
     // Clear lazy-loaded module cache to free up memory

@@ -1,478 +1,136 @@
 {
-  "name": "spectro-tab-tools",
-  "displayName": "Spectro Tab Tools",
-  "description": "VS Code extension that provides bulk, recursive, and customizable property sorting for TypeScript, JavaScript, CSS, SCSS, SASS, LESS, JSON, YAML, and Go files",
-  "version": "0.7.1",
-  "publisher": "spectrocloud",
-  "engines": {
-    "vscode": "^1.83.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/spectrocloud-labs/spectro-tab-tools.git"
-  },
-  "icon": "images/logo.png",
-  "categories": [
-    "Formatters",
-    "Other"
-  ],
-  "activationEvents": [
-    "onLanguage:typescript",
-    "onLanguage:typescriptreact",
-    "onLanguage:javascript",
-    "onLanguage:javascriptreact",
-    "onLanguage:css",
-    "onLanguage:scss",
-    "onLanguage:sass",
-    "onLanguage:less",
-    "onLanguage:go",
-    "onLanguage:json",
-    "onLanguage:jsonc",
-    "onLanguage:yaml",
-    "onLanguage:yml"
-  ],
-  "main": "./out/src/extension.js",
-  "contributes": {
-    "commands": [
-      {
-        "command": "spectro-tab-tools.sortProperties",
-        "title": "Sort Properties (Ascending)",
-        "category": "Spectro Tab Tools"
-      },
-      {
-        "command": "spectro-tab-tools.sortPropertiesDescending",
-        "title": "Sort Properties (Descending)",
-        "category": "Spectro Tab Tools"
-      },
-      {
-        "command": "spectro-tab-tools.test",
-        "title": "Test Extension",
-        "category": "Spectro Tab Tools"
-      }
-    ],
-    "keybindings": [
-      {
-        "command": "spectro-tab-tools.sortProperties",
-        "key": "ctrl+[",
-        "mac": "cmd+[",
-        "when": "editorTextFocus"
-      },
-      {
-        "command": "spectro-tab-tools.sortPropertiesDescending",
-        "key": "ctrl+shift+[",
-        "mac": "cmd+shift+[",
-        "when": "editorTextFocus"
-      }
-    ],
-    "configuration": {
-      "title": "Spectro Tab Tools",
-      "properties": {
-        "spectro-tab-tools.excludedLanguages": {
-          "type": "array",
-          "default": [],
-          "description": "List of languages where the property sorter should be disabled."
-        },
-        "spectro-tab-tools.includedFilePatterns": {
-          "type": "array",
-          "default": [
-            "**/*"
-          ],
-          "description": "File patterns to include for property sorting (glob patterns)."
-        },
-        "spectro-tab-tools.excludedFilePatterns": {
-          "type": "array",
-          "default": [],
-          "description": "File patterns to exclude from property sorting (glob patterns)."
-        },
-        "spectro-tab-tools.sortNestedObjects": {
-          "type": "boolean",
-          "default": true,
-          "description": "Enable recursive sorting of properties in nested object declarations."
-        },
-        "spectro-tab-tools.showDescendingOption": {
-          "type": "boolean",
-          "default": false,
-          "description": "Show the 'Sort Properties Descending' option in the context menu."
-        },
-        "spectro-tab-tools.css.groupVendorPrefixes": {
-          "type": "boolean",
-          "default": true,
-          "description": "Group vendor-prefixed properties together (e.g., -webkit-, -moz-)."
-        },
-        "spectro-tab-tools.css.sortByImportance": {
-          "type": "boolean",
-          "default": false,
-          "description": "Sort properties with !important declarations first."
-        },
-        "spectro-tab-tools.css.groupByCategory": {
-          "type": "boolean",
-          "default": false,
-          "description": "Group CSS properties by category (layout, typography, visual effects, etc.) before sorting alphabetically within each group."
-        },
-        "spectro-tab-tools.css.preserveMediaQueryOrder": {
-          "type": "boolean",
-          "default": true,
-          "description": "Preserve the original order of media queries instead of sorting them."
-        },
-        "spectro-tab-tools.css.sortNestedRules": {
-          "type": "boolean",
-          "default": true,
-          "description": "Sort nested rules in SCSS/SASS/LESS files (e.g., &:hover, &::before)."
-        },
-        "spectro-tab-tools.css.groupVariables": {
-          "type": "boolean",
-          "default": true,
-          "description": "Group CSS custom properties (variables) at the beginning of rule blocks."
-        },
-        "spectro-tab-tools.css.sortKeyframes": {
-          "type": "boolean",
-          "default": false,
-          "description": "Sort keyframe percentages in @keyframes rules (0%, 25%, 50%, 100%)."
-        },
-        "spectro-tab-tools.css.preserveVendorPrefixOrder": {
-          "type": "boolean",
-          "default": true,
-          "description": "Preserve the standard order of vendor prefixes (-webkit-, -moz-, -ms-, -o-, standard)."
-        },
-        "spectro-tab-tools.css.sortAtRules": {
-          "type": "boolean",
-          "default": false,
-          "description": "Sort @import, @use, @forward statements alphabetically in SCSS/SASS files."
-        },
-        "spectro-tab-tools.typescript.sortMethods": {
-          "type": "string",
-          "enum": [
-            "alphabetical",
-            "visibility",
-            "static-first",
-            "lifecycle"
-          ],
-          "default": "alphabetical",
-          "description": "Method sorting preference for TypeScript classes. 'alphabetical' sorts by name, 'visibility' groups by public/private/protected, 'static-first' puts static methods first, 'lifecycle' follows component lifecycle order."
-        },
-        "spectro-tab-tools.typescript.separateInterfacesAndClasses": {
-          "type": "boolean",
-          "default": false,
-          "description": "Handle interfaces and classes with different sorting rules when both are present in the same file."
-        },
-        "spectro-tab-tools.typescript.sortImportsExports": {
-          "type": "boolean",
-          "default": false,
-          "description": "Sort import and export statements alphabetically within their respective groups."
-        },
-        "spectro-tab-tools.typescript.groupImportsByType": {
-          "type": "boolean",
-          "default": true,
-          "description": "Group imports by type: external libraries, internal modules, relative imports."
-        },
-        "spectro-tab-tools.typescript.preserveMethodChaining": {
-          "type": "boolean",
-          "default": true,
-          "description": "Preserve method chaining order when sorting object properties that contain method calls."
-        },
-        "spectro-tab-tools.typescript.sortConstructorParameters": {
-          "type": "boolean",
-          "default": false,
-          "description": "Sort constructor parameters alphabetically while preserving dependency injection order."
-        },
-        "spectro-tab-tools.typescript.prioritizePublicMembers": {
-          "type": "boolean",
-          "default": false,
-          "description": "Sort public class members before private/protected members."
-        },
-        "spectro-tab-tools.go.sortStructFields": {
-          "type": "string",
-          "enum": [
-            "alphabetical",
-            "by-type",
-            "by-size",
-            "preserve-tags"
-          ],
-          "default": "alphabetical",
-          "description": "Struct field sorting preference. 'alphabetical' sorts by name, 'by-type' groups by field type, 'by-size' orders by memory size, 'preserve-tags' maintains fields with struct tags together."
-        },
-        "spectro-tab-tools.go.groupEmbeddedFields": {
-          "type": "boolean",
-          "default": true,
-          "description": "Group embedded (anonymous) struct fields at the beginning of struct definitions."
-        },
-        "spectro-tab-tools.go.sortMethodReceivers": {
-          "type": "boolean",
-          "default": false,
-          "description": "Sort methods by receiver type name when multiple receiver types are present in the same file."
-        },
-        "spectro-tab-tools.go.preserveStructTags": {
-          "type": "boolean",
-          "default": true,
-          "description": "Preserve struct tag formatting and order when sorting struct fields."
-        },
-        "spectro-tab-tools.go.groupByVisibility": {
-          "type": "boolean",
-          "default": false,
-          "description": "Group exported (public) fields before unexported (private) fields in struct definitions."
-        },
-        "spectro-tab-tools.go.sortInterfaceMethods": {
-          "type": "boolean",
-          "default": true,
-          "description": "Sort method signatures alphabetically within Go interface definitions."
-        },
-        "spectro-tab-tools.go.preserveMethodSets": {
-          "type": "boolean",
-          "default": false,
-          "description": "Keep related methods together based on common functionality patterns."
-        },
-        "spectro-tab-tools.json.sortObjectKeys": {
-          "type": "boolean",
-          "default": true,
-          "description": "Sort object keys alphabetically in JSON files."
-        },
-        "spectro-tab-tools.json.preserveArrayOrder": {
-          "type": "boolean",
-          "default": true,
-          "description": "Preserve the original order of array elements instead of sorting them."
-        },
-        "spectro-tab-tools.json.sortNestedObjects": {
-          "type": "boolean",
-          "default": true,
-          "description": "Enable recursive sorting of properties in nested JSON objects."
-        },
-        "spectro-tab-tools.json.customKeyOrder": {
-          "type": "array",
-          "default": [],
-          "description": "Custom key order list for JSON objects. Keys matching these names will be sorted first in the specified order.",
-          "items": {
-            "type": "string"
-          }
-        },
-        "spectro-tab-tools.json.groupBySchema": {
-          "type": "boolean",
-          "default": false,
-          "description": "Group JSON properties by common schema patterns (e.g., metadata, configuration, data)."
-        },
-        "spectro-tab-tools.json.preserveComments": {
-          "type": "boolean",
-          "default": true,
-          "description": "Preserve comments in JSON files (JSONC format). Note: Standard JSON does not support comments."
-        },
-        "spectro-tab-tools.sorting.caseSensitive": {
-          "type": "boolean",
-          "default": true,
-          "description": "Enable case-sensitive property sorting. When disabled, properties are sorted ignoring case differences."
-        },
-        "spectro-tab-tools.sorting.naturalSort": {
-          "type": "boolean",
-          "default": false,
-          "description": "Enable natural sort order for properties containing numbers (e.g., 'item2' comes before 'item10')."
-        },
-        "spectro-tab-tools.sorting.customOrder": {
-          "type": "array",
-          "default": [],
-          "description": "Custom property order list. Properties matching these names will be sorted first in the specified order.",
-          "items": {
-            "type": "string"
-          }
-        },
-        "spectro-tab-tools.sorting.groupByType": {
-          "type": "boolean",
-          "default": false,
-          "description": "Group properties by their type (e.g., methods, properties, getters/setters) before sorting alphabetically within each group."
-        },
-        "spectro-tab-tools.sorting.prioritizeRequired": {
-          "type": "boolean",
-          "default": false,
-          "description": "Sort required properties (without '?' in TypeScript) before optional properties."
-        },
-        "spectro-tab-tools.formatting.indentationType": {
-          "type": "string",
-          "enum": [
-            "auto",
-            "spaces",
-            "tabs"
-          ],
-          "default": "auto",
-          "description": "Indentation type to use. 'auto' detects from editor settings, 'spaces' uses spaces, 'tabs' uses tabs."
-        },
-        "spectro-tab-tools.formatting.indentationSize": {
-          "type": "number",
-          "default": 4,
-          "minimum": 1,
-          "maximum": 8,
-          "description": "Number of spaces to use for indentation when using spaces (ignored for tabs)."
-        },
-        "spectro-tab-tools.formatting.lineEnding": {
-          "type": "string",
-          "enum": [
-            "auto",
-            "lf",
-            "crlf"
-          ],
-          "default": "auto",
-          "description": "Line ending style to use. 'auto' detects from file or uses platform default, 'lf' uses Unix-style (\\n), 'crlf' uses Windows-style (\\r\\n)."
-        },
-        "spectro-tab-tools.formatting.preserveComments": {
-          "type": "boolean",
-          "default": true,
-          "description": "Whether to preserve comments in the output. When disabled, all comments are removed."
-        },
-        "spectro-tab-tools.formatting.commentStyle": {
-          "type": "string",
-          "enum": [
-            "preserve",
-            "single-line",
-            "multi-line"
-          ],
-          "default": "preserve",
-          "description": "Comment formatting style. 'preserve' keeps original style, 'single-line' converts to //, 'multi-line' converts to /* */."
-        },
-        "spectro-tab-tools.formatting.propertySpacing": {
-          "type": "string",
-          "enum": [
-            "compact",
-            "spaced",
-            "aligned"
-          ],
-          "default": "compact",
-          "description": "Property spacing style. 'compact' uses minimal spacing, 'spaced' adds space around colons, 'aligned' aligns property values."
-        },
-        "spectro-tab-tools.formatting.trailingCommas": {
-          "type": "string",
-          "enum": [
-            "preserve",
-            "add",
-            "remove"
-          ],
-          "default": "preserve",
-          "description": "Trailing comma handling. 'preserve' keeps original, 'add' ensures trailing commas, 'remove' removes trailing commas."
-        },
-        "spectro-tab-tools.formatting.blankLinesBetweenGroups": {
-          "type": "boolean",
-          "default": false,
-          "description": "Add blank lines between different property groups (when groupByType is enabled)."
-        },
-        "spectro-tab-tools.yaml.sortObjectKeys": {
-          "type": "boolean",
-          "default": true,
-          "description": "Sort object keys alphabetically in YAML files."
-        },
-        "spectro-tab-tools.yaml.preserveArrayOrder": {
-          "type": "boolean",
-          "default": true,
-          "description": "Preserve the original order of array elements instead of sorting them."
-        },
-        "spectro-tab-tools.yaml.sortNestedObjects": {
-          "type": "boolean",
-          "default": true,
-          "description": "Enable recursive sorting of properties in nested YAML objects."
-        },
-        "spectro-tab-tools.yaml.preserveAnchorsAndAliases": {
-          "type": "boolean",
-          "default": true,
-          "description": "Preserve YAML anchors (&anchor) and aliases (*alias) during sorting."
-        },
-        "spectro-tab-tools.yaml.preserveDocumentSeparators": {
-          "type": "boolean",
-          "default": true,
-          "description": "Preserve YAML document separators (---) and maintain multi-document structure."
-        },
-        "spectro-tab-tools.yaml.preserveStringStyles": {
-          "type": "boolean",
-          "default": true,
-          "description": "Preserve YAML string folding styles (|, >, |-, >-) and quoting styles."
-        },
-        "spectro-tab-tools.yaml.preserveComments": {
-          "type": "boolean",
-          "default": true,
-          "description": "Preserve comments in YAML files during sorting."
-        },
-        "spectro-tab-tools.yaml.indentationStyle": {
-          "type": "string",
-          "enum": [
-            "auto",
-            "2-spaces",
-            "4-spaces"
-          ],
-          "default": "auto",
-          "description": "YAML indentation style. 'auto' detects from file, '2-spaces' uses 2 spaces, '4-spaces' uses 4 spaces."
-        },
-        "spectro-tab-tools.yaml.handleComplexKeys": {
-          "type": "boolean",
-          "default": true,
-          "description": "Handle complex keys (nested objects/arrays as keys) by preserving their structure during sorting."
-        },
-        "spectro-tab-tools.yaml.customKeyOrder": {
-          "type": "array",
-          "default": [],
-          "description": "Custom key order list for YAML objects. Keys matching these names will be sorted first in the specified order (e.g., ['apiVersion', 'kind', 'metadata', 'spec']).",
-          "items": {
-            "type": "string"
-          }
-        },
-        "spectro-tab-tools.yaml.groupBySchema": {
-          "type": "boolean",
-          "default": false,
-          "description": "Group YAML properties by common schema patterns (e.g., Kubernetes: apiVersion/kind → metadata → spec → status, Docker Compose: version → services → networks/volumes)."
-        }
-      }
+    "name": "spectro-tab-tools",
+    "displayName": "Spectro Tab Tools",
+    "description": "VS Code extension that provides bulk, recursive, and customizable property sorting for TypeScript, JavaScript, CSS, SCSS, SASS, LESS, JSON, YAML, and Go files",
+    "version": "0.7.1",
+    "publisher": "spectrocloud",
+    "engines": {
+        "vscode": "^1.83.0"
     },
-    "menus": {
-      "editor/context": [
-        {
-          "command": "spectro-tab-tools.sortProperties",
-          "group": "spectro-tab-tools",
-          "when": "editorTextFocus && (resourceLangId == 'typescript' || resourceLangId == 'typescriptreact' || resourceLangId == 'javascript' || resourceLangId == 'javascriptreact' || resourceLangId == 'css' || resourceLangId == 'scss' || resourceLangId == 'sass' || resourceLangId == 'less' || resourceLangId == 'go' || resourceLangId == 'json' || resourceLangId == 'jsonc' || resourceLangId == 'yaml' || resourceLangId == 'yml')"
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/spectrocloud-labs/spectro-tab-tools.git"
+    },
+    "icon": "images/logo.png",
+    "categories": [
+        "Formatters",
+        "Other"
+    ],
+    "activationEvents": [
+        "onLanguage:typescript",
+        "onLanguage:typescriptreact",
+        "onLanguage:javascript",
+        "onLanguage:javascriptreact",
+        "onLanguage:css",
+        "onLanguage:scss",
+        "onLanguage:sass",
+        "onLanguage:less",
+        "onLanguage:go",
+        "onLanguage:json",
+        "onLanguage:jsonc",
+        "onLanguage:yaml",
+        "onLanguage:yml"
+    ],
+    "main": "./out/src/extension.js",
+    "contributes": {
+        "commands": [
+            {
+                "command": "spectro-tab-tools.doThing",
+                "title": "Test Extension",
+                "category": "Spectro Tab Tools"
+            },
+            {
+                "command": "spectro-tab-tools.listTabs",
+                "title": "List Open Tabs",
+                "category": "Spectro Tab Tools"
+            },
+            {
+                "command": "spectro-tab-tools.showTabStats",
+                "title": "Show Tab Statistics",
+                "category": "Spectro Tab Tools"
+            },
+            {
+                "command": "spectro-tab-tools.refreshTabs",
+                "title": "Refresh Tab Tracking",
+                "category": "Spectro Tab Tools"
+            }
+        ],
+        "keybindings": [],
+        "configuration": {
+            "title": "Spectro Tab Tools",
+            "properties": {
+                "spectro-tab-tools.smartNavigation.enabled": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enable smart tab navigation that reuses existing tabs when using 'Go to Definition'."
+                },
+                "spectro-tab-tools.excludedLanguages": {
+                    "type": "array",
+                    "default": [],
+                    "description": "List of languages where the property sorter should be disabled."
+                },
+                "spectro-tab-tools.includedFilePatterns": {
+                    "type": "array",
+                    "default": [
+                        "**/*"
+                    ],
+                    "description": "File patterns to include for property sorting (glob patterns)."
+                },
+                "spectro-tab-tools.excludedFilePatterns": {
+                    "type": "array",
+                    "default": [],
+                    "description": "File patterns to exclude from property sorting (glob patterns)."
+                }
+            }
         },
-        {
-          "command": "spectro-tab-tools.sortPropertiesDescending",
-          "group": "spectro-tab-tools",
-          "when": "editorTextFocus && config.spectro-tab-tools.showDescendingOption && (resourceLangId == 'typescript' || resourceLangId == 'typescriptreact' || resourceLangId == 'javascript' || resourceLangId == 'javascriptreact' || resourceLangId == 'css' || resourceLangId == 'scss' || resourceLangId == 'sass' || resourceLangId == 'less' || resourceLangId == 'go' || resourceLangId == 'json' || resourceLangId == 'jsonc' || resourceLangId == 'yaml' || resourceLangId == 'yml')"
+        "menus": {
+            "editor/context": []
         }
-      ]
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run build:prod",
+        "build:prod": "tsc -p ./tsconfig.prod.json",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./",
+        "pretest": "npm run compile && npm run lint",
+        "lint": "eslint src --ext ts",
+        "test": "npm run compile && node ./out/test/runTest.js",
+        "test:coverage": "nyc --reporter=lcov --reporter=html --reporter=text --reporter=json-summary npm test",
+        "test:performance": "npm test -- --grep \"Performance and Stress Tests\"",
+        "test:watch": "npm run compile && npm test -- --watch",
+        "coverage": "nyc report --reporter=html --reporter=text",
+        "coverage:check": "nyc check-coverage --lines 80 --functions 80 --branches 70 --statements 80",
+        "package": "npm run check-docs && npm run build:prod && npx vsce package --skip-license",
+        "check-docs": "node scripts/doc-checker.js",
+        "clean": "rimraf out coverage .nyc_output",
+        "report:performance": "npm run test:performance 2>&1 | node scripts/performance-reporter.js",
+        "ci:test": "npm run test:coverage && npm run report:performance",
+        "ci:report": "npm run coverage && npm run report:performance",
+        "test:report": "node scripts/test-reporter.js"
+    },
+    "dependencies": {
+        "js-yaml": "~4.1.0",
+        "typescript": "^5.2.2"
+    },
+    "devDependencies": {
+        "@istanbuljs/nyc-config-typescript": "^1.0.2",
+        "@types/js-yaml": "^4.0.9",
+        "@types/mocha": "^10.0.2",
+        "@types/node": "18.x",
+        "@types/sinon": "^17.0.4",
+        "@types/vscode": "^1.83.0",
+        "@typescript-eslint/eslint-plugin": "^6.7.3",
+        "@typescript-eslint/parser": "^6.7.3",
+        "@vanilla-extract/css": "^1.17.1",
+        "@vscode/test-electron": "^2.3.4",
+        "@vscode/vsce": "^3.6.0",
+        "eslint": "^8.50.0",
+        "glob": "^10.3.3",
+        "mocha": "^10.2.0",
+        "nyc": "^17.1.0",
+        "rimraf": "^5.0.5",
+        "sinon": "^20.0.0",
+        "source-map-support": "^0.5.21",
+        "ts-node": "^10.9.2"
     }
-  },
-  "scripts": {
-    "vscode:prepublish": "npm run build:prod",
-    "build:prod": "tsc -p ./tsconfig.prod.json",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
-    "pretest": "npm run compile && npm run lint",
-    "lint": "eslint src --ext ts",
-    "test": "npm run compile && node ./out/test/runTest.js",
-    "test:coverage": "nyc --reporter=lcov --reporter=html --reporter=text --reporter=json-summary npm test",
-    "test:performance": "npm test -- --grep \"Performance and Stress Tests\"",
-    "test:watch": "npm run compile && npm test -- --watch",
-    "coverage": "nyc report --reporter=html --reporter=text",
-    "coverage:check": "nyc check-coverage --lines 80 --functions 80 --branches 70 --statements 80",
-    "package": "npm run check-docs && npm run build:prod && npx vsce package --skip-license",
-    "check-docs": "node scripts/doc-checker.js",
-    "clean": "rimraf out coverage .nyc_output",
-    "report:performance": "npm run test:performance 2>&1 | node scripts/performance-reporter.js",
-    "ci:test": "npm run test:coverage && npm run report:performance",
-    "ci:report": "npm run coverage && npm run report:performance",
-    "test:report": "node scripts/test-reporter.js"
-  },
-  "dependencies": {
-    "js-yaml": "~4.1.0",
-    "typescript": "^5.2.2"
-  },
-  "devDependencies": {
-    "@istanbuljs/nyc-config-typescript": "^1.0.2",
-    "@types/js-yaml": "^4.0.9",
-    "@types/mocha": "^10.0.2",
-    "@types/node": "18.x",
-    "@types/sinon": "^17.0.4",
-    "@types/vscode": "^1.83.0",
-    "@typescript-eslint/eslint-plugin": "^6.7.3",
-    "@typescript-eslint/parser": "^6.7.3",
-    "@vanilla-extract/css": "^1.17.1",
-    "@vscode/test-electron": "^2.3.4",
-    "@vscode/vsce": "^3.3.2",
-    "eslint": "^8.50.0",
-    "glob": "^10.3.3",
-    "mocha": "^10.2.0",
-    "nyc": "^17.1.0",
-    "rimraf": "^5.0.5",
-    "sinon": "^20.0.0",
-    "source-map-support": "^0.5.21",
-    "ts-node": "^10.9.2"
-  }
 }
