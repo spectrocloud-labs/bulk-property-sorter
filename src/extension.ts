@@ -1,4 +1,8 @@
 import * as vscode from 'vscode'
+import { TabManager } from './tabManager'
+
+// Global TabManager instance
+let tabManager: TabManager | undefined
 
 // Lazy-loaded modules cache
 // let fileProcessorModule: typeof import('./fileProcessor') | undefined;
@@ -41,23 +45,66 @@ import * as vscode from 'vscode'
  */
 export function activate(context: vscode.ExtensionContext) {
     console.log('Spectro Tab Tools: Extension is activating...')
+    
+    // Initialize TabManager
+    console.log('Spectro Tab Tools: Initializing TabManager...')
+    tabManager = new TabManager()
+    
+    // Initialize TabManager and add to disposables for cleanup
+    tabManager.initialize().then(() => {
+        console.log('Spectro Tab Tools: TabManager initialized successfully')
+    }).catch(error => {
+        console.error('Spectro Tab Tools: Failed to initialize TabManager:', error)
+    })
+    
+    // Add TabManager to disposables for proper cleanup
+    context.subscriptions.push(tabManager)
+    
     // Register essential commands (always registered for immediate availability)
     console.log('Spectro Tab Tools: Registering essential commands...')
-    console.log(
-        'Spectro Tab Tools: Registering doThing command...'
-    )
+    
+    // Register doThing command (legacy placeholder)
+    console.log('Spectro Tab Tools: Registering doThing command...')
     const doThingCommand = vscode.commands.registerCommand(
         'spectro-tab-tools.doThing',
         async () => {
-            console.log(
-                'Spectro Tab Tools: doThing command executed'
-            )
+            console.log('Spectro Tab Tools: doThing command executed')
             await handleDoThingCommand()
         }
     )
 
-    // Add essential commands to subscriptions
-    context.subscriptions.push(doThingCommand)
+    // Register TabManager commands
+    const listTabsCommand = vscode.commands.registerCommand(
+        'spectro-tab-tools.listTabs',
+        async () => {
+            console.log('Spectro Tab Tools: listTabs command executed')
+            await handleListTabsCommand()
+        }
+    )
+
+    const showTabStatsCommand = vscode.commands.registerCommand(
+        'spectro-tab-tools.showTabStats',
+        async () => {
+            console.log('Spectro Tab Tools: showTabStats command executed')
+            await handleShowTabStatsCommand()
+        }
+    )
+
+    const refreshTabsCommand = vscode.commands.registerCommand(
+        'spectro-tab-tools.refreshTabs',
+        async () => {
+            console.log('Spectro Tab Tools: refreshTabs command executed')
+            await handleRefreshTabsCommand()
+        }
+    )
+
+    // Add commands to subscriptions
+    context.subscriptions.push(
+        doThingCommand,
+        listTabsCommand,
+        showTabStatsCommand,
+        refreshTabsCommand
+    )
 
     const isDevelopmentMode =
         context.extensionMode === vscode.ExtensionMode.Development ||
@@ -186,6 +233,108 @@ async function handleDoThingCommand(): Promise<void> {
 }
 
 /**
+ * Handles the list tabs command to display all tracked tabs
+ */
+async function handleListTabsCommand(): Promise<void> {
+    if (!tabManager || !tabManager.isReady()) {
+        vscode.window.showErrorMessage('TabManager is not initialized')
+        return
+    }
+
+    try {
+        const allTabs = tabManager.getAllTabs()
+        
+        if (allTabs.length === 0) {
+            vscode.window.showInformationMessage('No tabs are currently tracked')
+            return
+        }
+
+        const tabList = allTabs.map((tabInfo, index) => {
+            const fileName = tabInfo.uri.path.split('/').pop() || tabInfo.uri.toString()
+            const accessTime = new Date(tabInfo.lastAccessTime).toLocaleTimeString()
+            return `${index + 1}. ${fileName} (Group: ${tabInfo.groupId}, Last accessed: ${accessTime})`
+        }).join('\n')
+
+        vscode.window.showInformationMessage(
+            `Tracked Tabs (${allTabs.length}):\n${tabList}`,
+            { modal: true }
+        )
+    } catch (error) {
+        console.error('Spectro Tab Tools: Error listing tabs:', error)
+        vscode.window.showErrorMessage(
+            `Failed to list tabs: ${error instanceof Error ? error.message : String(error)}`
+        )
+    }
+}
+
+/**
+ * Handles the show tab stats command to display tab statistics
+ */
+async function handleShowTabStatsCommand(): Promise<void> {
+    if (!tabManager || !tabManager.isReady()) {
+        vscode.window.showErrorMessage('TabManager is not initialized')
+        return
+    }
+
+    try {
+        const allTabs = tabManager.getAllTabs()
+        const tabsByAccessTime = tabManager.getTabsByAccessTime()
+        const tabCount = tabManager.getTabCount()
+
+        // Calculate group distribution
+        const groupCounts: { [key: number]: number } = {}
+        allTabs.forEach(tab => {
+            groupCounts[tab.groupId] = (groupCounts[tab.groupId] || 0) + 1
+        })
+
+        const groupStats = Object.entries(groupCounts)
+            .map(([groupId, count]) => `Group ${groupId}: ${count} tabs`)
+            .join('\n')
+
+        const mostRecentTab = tabsByAccessTime[0]
+        const oldestTab = tabsByAccessTime[tabsByAccessTime.length - 1]
+
+        const statsMessage = `Tab Statistics:
+Total Tabs: ${tabCount}
+Groups: ${Object.keys(groupCounts).length}
+
+Group Distribution:
+${groupStats}
+
+Most Recent: ${mostRecentTab ? mostRecentTab.uri.path.split('/').pop() : 'None'}
+Oldest: ${oldestTab ? oldestTab.uri.path.split('/').pop() : 'None'}`
+
+        vscode.window.showInformationMessage(statsMessage, { modal: true })
+    } catch (error) {
+        console.error('Spectro Tab Tools: Error showing tab stats:', error)
+        vscode.window.showErrorMessage(
+            `Failed to show tab stats: ${error instanceof Error ? error.message : String(error)}`
+        )
+    }
+}
+
+/**
+ * Handles the refresh tabs command to re-enumerate all tabs
+ */
+async function handleRefreshTabsCommand(): Promise<void> {
+    if (!tabManager || !tabManager.isReady()) {
+        vscode.window.showErrorMessage('TabManager is not initialized')
+        return
+    }
+
+    try {
+        await tabManager.enumerateTabs()
+        const tabCount = tabManager.getTabCount()
+        vscode.window.showInformationMessage(`Refreshed tab tracking. Found ${tabCount} tabs.`)
+    } catch (error) {
+        console.error('Spectro Tab Tools: Error refreshing tabs:', error)
+        vscode.window.showErrorMessage(
+            `Failed to refresh tabs: ${error instanceof Error ? error.message : String(error)}`
+        )
+    }
+}
+
+/**
  * Deactivates the extension and performs cleanup
  *
  * This function is called when the extension is deactivated by VS Code.
@@ -206,6 +355,13 @@ async function handleDoThingCommand(): Promise<void> {
  * ```
  */
 export function deactivate() {
+    // Clean up TabManager
+    if (tabManager) {
+        console.log('Spectro Tab Tools: Disposing TabManager...')
+        tabManager.dispose()
+        tabManager = undefined
+    }
+
     // Clear lazy-loaded module cache to free up memory
     // fileProcessorModule = undefined;
     console.log('Spectro Tab Tools: Extension deactivated and cache cleared')
