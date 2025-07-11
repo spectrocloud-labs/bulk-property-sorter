@@ -1,0 +1,325 @@
+# Overview  
+The Spectro Tab Tools extension will be transformed from a property sorting utility into a smart tab navigation and management system for VS Code. This extension will solve the common problem of tab proliferation and inefficient navigation that occurs when developers work with large codebases. Instead of constantly opening new temporary tabs for symbol definitions, the extension will intelligently reuse existing tabs and provide powerful tab cleanup capabilities.
+
+The target users are developers working with medium to large codebases who frequently navigate between files and struggle with tab management. The extension provides significant value by reducing cognitive overhead, improving navigation efficiency, and maintaining a cleaner workspace.
+
+# Core Features  
+
+## 1. Smart Symbol Navigation
+**What it does**: When a symbol is Command/Ctrl+clicked for "Go to Definition", the extension checks all open tabs across all editor groups. If the target file is already open in any tab, it focuses that tab and navigates to the symbol definition instead of opening a new temporary tab.
+
+**Why it's important**: Prevents tab proliferation and maintains context by reusing existing file views. Developers often have the same files open in multiple contexts and this feature eliminates duplicate tabs.
+
+**How it works**: Intercepts the default "Go to Definition" behavior, scans all tab groups for the target file URI, and programmatically focuses the existing tab while preserving the symbol navigation.
+
+## 2. Command Palette Symbol Navigation (Optional)
+**What it does**: Extends the smart navigation behavior to the Command Palette symbol picker (Cmd/Ctrl+T). When a symbol is selected, it follows the same logic of reusing existing tabs.
+
+**Why it's important**: Provides consistent behavior across all symbol navigation methods, ensuring users never accidentally create duplicate tabs regardless of how they navigate.
+
+**How it works**: Hooks into the symbol picker workflow and applies the same tab-reuse logic before performing the navigation.
+
+## 3. Smart Tab Cleanup
+**What it does**: Provides commands to close all but the last X recently used tabs, with separate commands for current group and all groups. X is configurable with a default of 5.
+
+**Why it's important**: Prevents workspace clutter and improves performance by maintaining a manageable number of open tabs while preserving the most recently accessed files.
+
+**How it works**: Tracks tab access times, sorts by recency, and closes older tabs while preserving the specified number of most recent tabs.
+
+# User Experience  
+
+## User Personas
+- **Primary**: Mid-level to senior developers working on large codebases (10+ files regularly open)
+- **Secondary**: Junior developers learning to navigate large projects efficiently
+- **Tertiary**: Technical leads who frequently switch between multiple areas of a codebase
+
+## Key User Flows
+
+### Smart Navigation Flow
+1. Developer Ctrl+clicks on a symbol (function call, import, etc.)
+2. Extension checks if target file is already open in any tab group
+3. If found: Focus existing tab and navigate to symbol
+4. If not found: Open new tab as normal
+5. No interruption to developer workflow - behavior is transparent
+
+### Tab Cleanup Flow
+1. Developer notices too many tabs open (visual clutter)
+2. Runs "Close All But Last 5 Tabs" command via Command Palette or keybinding
+3. Extension preserves 5 most recently used tabs in current group
+4. Closes remaining tabs
+5. Workspace is now clean and focused
+
+## UI/UX Considerations
+- **Transparency**: Smart navigation should be invisible - users shouldn't notice the difference except for the absence of duplicate tabs
+- **Configuration**: All numeric settings (number of tabs to keep) should be easily configurable
+- **Feedback**: Minimal, non-intrusive notifications when cleanup commands are executed
+- **Consistency**: Behavior should be consistent across all editor groups and navigation methods
+
+# Technical Architecture  
+
+## System Components
+
+### 1. Navigation Interceptor
+- Hooks into VS Code's "Go to Definition" command
+- Implements tab scanning and focus logic
+- Maintains compatibility with existing navigation features
+
+### 2. Tab Manager
+- Tracks tab usage patterns and timestamps
+- Implements tab cleanup algorithms
+- Manages tab state across editor groups
+
+### 3. Configuration Manager
+- Handles user preferences and settings
+- Provides default values and validation
+- Integrates with VS Code's settings system
+
+### 4. Command Registry
+- Registers extension commands with VS Code
+- Provides Command Palette integration
+- Handles keybinding assignments
+
+## Data Models
+
+### Tab State Model
+```typescript
+interface TabState {
+  uri: string;
+  lastAccessed: Date;
+  groupId: string;
+  tabIndex: number;
+}
+```
+
+### Configuration Model
+```typescript
+interface ExtensionConfig {
+  enableSmartNavigation: boolean;
+  enableSymbolPickerIntegration: boolean;
+  defaultTabsToKeep: number;
+  enableUsageTracking: boolean;
+}
+```
+
+## APIs and Integrations
+
+### VS Code API Dependencies
+- `vscode.commands` - Command registration and execution
+- `vscode.window.tabGroups` - Tab group management
+- `vscode.window.activeTextEditor` - Current editor state
+- `vscode.workspace.onDidOpenTextDocument` - Document lifecycle
+- `vscode.languages.registerDefinitionProvider` - Symbol navigation override
+
+### Internal APIs
+- Tab tracking service for usage monitoring
+- Navigation service for smart routing
+- Cleanup service for tab management
+
+## Infrastructure Requirements
+- No external dependencies beyond VS Code API
+- Local storage for user preferences
+- Memory-efficient tab state tracking
+- Cross-platform compatibility (Windows, macOS, Linux)
+
+# Development Roadmap  
+
+## Phase 1: Foundation & Core Smart Navigation (MVP)
+**Scope**: Basic smart navigation for Ctrl+click "Go to Definition"
+
+### Features
+- Replace existing property sorting functionality with tab management core
+- Implement basic tab scanning across all editor groups
+- Add smart navigation for symbol definitions via Ctrl+click
+- Basic configuration system for enabling/disabling features
+- Simple tab state tracking
+
+### Technical Deliverables
+- Remove all property sorting code and dependencies
+- Implement `TabManager` class with basic tab enumeration
+- Create `NavigationInterceptor` to override default "Go to Definition"
+- Add configuration schema for basic settings
+- Update package.json with new commands and activation events
+
+### Success Criteria
+- Ctrl+clicking a symbol reuses existing tabs when target file is open
+- No duplicate tabs created for files already open in any group
+- Configuration options work correctly
+- No performance degradation in normal navigation
+
+## Phase 2: Enhanced Navigation & Symbol Picker Integration
+**Scope**: Extend smart navigation to Command Palette symbol picker
+
+### Features
+- Integrate smart navigation with Cmd+T symbol picker
+- Enhanced tab detection across complex editor layouts
+- Improved configuration options and user feedback
+- Better error handling and edge case management
+
+### Technical Deliverables
+- Extend `NavigationInterceptor` to handle symbol picker workflows
+- Improve tab scanning algorithm for complex group layouts
+- Add user feedback for navigation actions (optional)
+- Enhanced configuration validation and defaults
+- Comprehensive error handling
+
+### Success Criteria
+- Symbol picker (Cmd+T) follows same smart navigation rules
+- Works correctly with split editors and multiple groups
+- Graceful handling of edge cases (closed files, unsaved changes)
+
+## Phase 3: Smart Tab Cleanup System
+**Scope**: Tab cleanup commands with usage tracking
+
+### Features
+- "Close all but last X tabs" for current group
+- "Close all but last X tabs" for all groups
+- Configurable number of tabs to preserve (default: 5)
+- Smart usage tracking to determine "most recent"
+- Command Palette integration and optional keybindings
+
+### Technical Deliverables
+- Implement tab usage tracking with timestamps
+- Create cleanup algorithms for single group and all groups
+- Add new commands to package.json and command registry
+- Enhanced configuration for cleanup preferences
+- Memory-efficient usage tracking system
+
+### Success Criteria
+- Cleanup commands preserve most recently used tabs
+- Configurable number of tabs to keep (1-20 range)
+- Works across all editor groups consistently
+- No data loss or unexpected tab closures
+
+## Phase 4: Polish & Advanced Features
+**Scope**: Performance optimization, advanced configuration, and user experience improvements
+
+### Features
+- Performance optimization for large numbers of tabs
+- Advanced configuration options (exclude patterns, group-specific settings)
+- Optional visual indicators for smart navigation
+- Usage analytics and optimization suggestions
+- Comprehensive testing and edge case handling
+
+### Technical Deliverables
+- Performance profiling and optimization
+- Advanced configuration schema
+- Optional UI enhancements
+- Comprehensive test suite
+- Documentation and usage examples
+
+### Success Criteria
+- Handles 50+ open tabs without performance issues
+- Advanced configuration options work correctly
+- Zero critical bugs in common usage scenarios
+- Positive user feedback and adoption
+
+# Logical Dependency Chain
+
+## Foundation First (Phase 1)
+- **Core tab management infrastructure** must be built first as it's the foundation for all other features
+- **Basic smart navigation** provides immediate value and validates the core concept
+- **Configuration system** enables user customization from the start
+
+## Quick User Value (Phase 1 → Phase 2)
+- **Smart Ctrl+click navigation** provides immediate, visible benefit to users
+- **Symbol picker integration** extends the value with minimal additional complexity
+- **Each phase builds incrementally** on the previous without requiring major refactoring
+
+## Scalable Enhancement (Phase 2 → Phase 3)
+- **Tab cleanup features** leverage the tab tracking infrastructure built in earlier phases
+- **Usage tracking** can be added incrementally without affecting existing functionality
+- **Command system** reuses the configuration and command infrastructure
+
+## Polish & Optimization (Phase 3 → Phase 4)
+- **Performance optimization** comes after core functionality is proven
+- **Advanced features** build on solid foundation without risking core stability
+- **Testing and polish** ensure production readiness
+
+# Risks and Mitigations  
+
+## Technical Challenges
+
+### Risk: VS Code API Limitations
+**Description**: VS Code's tab management APIs may not provide sufficient access for advanced tab manipulation
+**Mitigation**: Start with basic API exploration in Phase 1, identify limitations early, and design workarounds or alternative approaches
+
+### Risk: Performance Impact
+**Description**: Tab scanning and usage tracking could impact editor performance with many open tabs
+**Mitigation**: Implement efficient algorithms from the start, use debouncing for tracking, and include performance testing in each phase
+
+### Risk: Navigation Override Conflicts
+**Description**: Overriding default navigation behavior might conflict with other extensions
+**Mitigation**: Use VS Code's proper command override mechanisms, provide configuration to disable features, and test with popular extensions
+
+## MVP Definition & Scope Management
+
+### Risk: Feature Creep
+**Description**: Temptation to add advanced features before core functionality is solid
+**Mitigation**: Strict adherence to phase-based development, user feedback validation before adding features, clear success criteria for each phase
+
+### Risk: Complex Edge Cases
+**Description**: Tab management has many edge cases (unsaved files, split views, etc.)
+**Mitigation**: Start with simple, common cases in MVP, document known limitations, and address edge cases in later phases
+
+## Resource Constraints
+
+### Risk: Development Time Underestimation
+**Description**: VS Code extension development may take longer than expected
+**Mitigation**: Start with thorough API exploration, create proof-of-concept implementations early, and maintain flexible timeline expectations
+
+### Risk: Testing Complexity
+**Description**: Testing tab management across different VS Code configurations is complex
+**Mitigation**: Focus on automated testing where possible, create comprehensive manual testing checklists, and engage beta users for real-world testing
+
+# Appendix  
+
+## Research Findings
+
+### VS Code Extension API Analysis
+- `vscode.window.tabGroups` provides comprehensive tab management capabilities
+- Command overriding is supported through proper registration mechanisms
+- Configuration system is robust and integrates well with VS Code settings
+
+### Competitive Analysis
+- Few extensions provide smart tab navigation (opportunity for differentiation)
+- Tab management extensions exist but lack intelligent navigation features
+- User demand exists based on VS Code issue tracker and community discussions
+
+### User Research Insights
+- Developers frequently struggle with tab proliferation in large projects
+- Current "Go to Definition" behavior often creates unwanted duplicate tabs
+- Tab cleanup is often done manually and inconsistently
+
+## Technical Specifications
+
+### Minimum VS Code Version
+- Target: VS Code 1.83.0+ (current baseline in package.json)
+- Rationale: Provides stable tab management APIs
+
+### Performance Requirements
+- Tab scanning: <100ms for up to 50 open tabs
+- Navigation override: <50ms additional latency
+- Memory usage: <10MB for tracking data
+
+### Configuration Schema
+```json
+{
+  "spectro-tab-tools.enableSmartNavigation": {
+    "type": "boolean",
+    "default": true,
+    "description": "Enable smart tab navigation for symbol definitions"
+  },
+  "spectro-tab-tools.enableSymbolPickerIntegration": {
+    "type": "boolean", 
+    "default": false,
+    "description": "Enable smart navigation for Command Palette symbol picker"
+  },
+  "spectro-tab-tools.defaultTabsToKeep": {
+    "type": "number",
+    "default": 5,
+    "minimum": 1,
+    "maximum": 20,
+    "description": "Default number of tabs to keep when using cleanup commands"
+  }
+}
+```
