@@ -43,7 +43,7 @@ async function getFilePatternFilter(): Promise<typeof import('./filePatternFilte
 }
 
 /**
- * Activates the Bulk Property Sorter extension and registers commands
+ * Activates the Spectro Tab Tools extension and registers commands
  *
  * This function is called when the extension is activated by VS Code. It sets up
  * the command handlers for sorting properties in ascending and descending order.
@@ -56,8 +56,8 @@ async function getFilePatternFilter(): Promise<typeof import('./filePatternFilte
  * ```typescript
  * // Called automatically by VS Code when extension activates
  * // User can then run commands via Command Palette:
- * // - "Bulk Property Sorter: Sort Properties (Ascending)"
- * // - "Bulk Property Sorter: Sort Properties (Descending)"
+ * // - "Spectro Tab Tools: Sort Properties (Ascending)"
+ * // - "Spectro Tab Tools: Sort Properties (Descending)"
  * ```
  *
  * @example
@@ -70,20 +70,20 @@ async function getFilePatternFilter(): Promise<typeof import('./filePatternFilte
  * ```
  */
 export function activate(context: vscode.ExtensionContext) {
-    console.log('Bulk Property Sorter: Extension is activating...')
+    console.log('Spectro Tab Tools: Extension is activating...')
 
     // No longer creating FileProcessor eagerly - it will be created when needed
 
     // Register essential commands (always registered for immediate availability)
-    console.log('Bulk Property Sorter: Registering essential commands...')
+    console.log('Spectro Tab Tools: Registering essential commands...')
     
     // Register the sort properties command (ascending)
-    console.log('Bulk Property Sorter: Registering sortProperties command...')
+    console.log('Spectro Tab Tools: Registering sortProperties command...')
     const sortPropertiesCommand = vscode.commands.registerCommand(
-        'bulk-property-sorter.sortProperties',
+        'spectro-tab-tools.sortProperties',
         async () => {
             console.log(
-                'Bulk Property Sorter: sortProperties command executed'
+                'Spectro Tab Tools: sortProperties command executed'
             )
             await handleSortCommand('asc')
         }
@@ -91,13 +91,13 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Register the sort properties descending command
     console.log(
-        'Bulk Property Sorter: Registering sortPropertiesDescending command...'
+        'Spectro Tab Tools: Registering sortPropertiesDescending command...'
     )
     const sortPropertiesDescendingCommand = vscode.commands.registerCommand(
-        'bulk-property-sorter.sortPropertiesDescending',
+        'spectro-tab-tools.sortPropertiesDescending',
         async () => {
             console.log(
-                'Bulk Property Sorter: sortPropertiesDescending command executed'
+                'Spectro Tab Tools: sortPropertiesDescending command executed'
             )
             await handleSortCommand('desc')
         }
@@ -108,28 +108,28 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(sortPropertiesDescendingCommand)
 
     // Register non-essential commands conditionally (development/testing only)
-    console.log('Bulk Property Sorter: Checking for non-essential command registration...')
+    console.log('Spectro Tab Tools: Checking for non-essential command registration...')
     const isDevelopmentMode = context.extensionMode === vscode.ExtensionMode.Development ||
                               process.env.NODE_ENV === 'development' ||
                               process.env.BULK_PROPERTY_SORTER_DEBUG === 'true'
 
     if (isDevelopmentMode) {
-        console.log('Bulk Property Sorter: Development mode detected, registering test command...')
+        console.log('Spectro Tab Tools: Development mode detected, registering test command...')
         // Register a test command to verify extension is working (development only)
         const testCommand = vscode.commands.registerCommand(
-            'bulk-property-sorter.test',
+            'spectro-tab-tools.test',
             () => {
                 console.log(
-                    'Bulk Property Sorter: Test command executed successfully!'
+                    'Spectro Tab Tools: Test command executed successfully!'
                 )
                 vscode.window.showInformationMessage(
-                    'Bulk Property Sorter is working! Extension is properly activated.'
+                    'Spectro Tab Tools is working! Extension is properly activated.'
                 )
             }
         )
         context.subscriptions.push(testCommand)
     } else {
-        console.log('Bulk Property Sorter: Production mode - test command not registered')
+        console.log('Spectro Tab Tools: Production mode - test command not registered')
     }
 
     // Future pattern for deferrable commands:
@@ -137,7 +137,7 @@ export function activate(context: vscode.ExtensionContext) {
     // - Register commands on first use or specific conditions
     // - Use lazy registration pattern similar to above
 
-    console.log('Bulk Property Sorter: Extension activated successfully')
+    console.log('Spectro Tab Tools: Extension activated successfully')
 }
 
 /**
@@ -169,24 +169,24 @@ async function handleSortCommand(
     sortOrder: 'asc' | 'desc'
 ): Promise<void> {
     console.log(
-        `Bulk Property Sorter: handleSortCommand called with order: ${sortOrder}`
+        `Spectro Tab Tools: handleSortCommand called with order: ${sortOrder}`
     )
 
     const editor = vscode.window.activeTextEditor
 
     if (!editor) {
-        console.log('Bulk Property Sorter: No active editor found')
+        console.log('Spectro Tab Tools: No active editor found')
         vscode.window.showErrorMessage('No active editor found')
         return
     }
 
     console.log(
-        `Bulk Property Sorter: Processing file with language: ${editor.document.languageId}`
+        `Spectro Tab Tools: Processing file with language: ${editor.document.languageId}`
     )
 
     try {
         // Lazy load modules only when needed
-        console.log('Bulk Property Sorter: Loading processor modules...')
+        console.log('Spectro Tab Tools: Loading processor modules...')
         const [fileProcessor, formattingUtils, filePatternFilter] = await Promise.all([
             getFileProcessor(),
             getFormattingUtils(),
@@ -194,7 +194,7 @@ async function handleSortCommand(
         ]);
 
         // Get extension configuration
-        const config = vscode.workspace.getConfiguration('bulk-property-sorter')
+        const config = vscode.workspace.getConfiguration('spectro-tab-tools')
         const excludedLanguages = config.get<string[]>('excludedLanguages', [])
         const sortNestedObjects = config.get<boolean>('sortNestedObjects', true)
         
@@ -425,7 +425,7 @@ async function handleSortCommand(
             )
         }
     } catch (error) {
-        console.error('Bulk Property Sorter: Error during command execution:', error)
+        console.error('Spectro Tab Tools: Error during command execution:', error)
         vscode.window.showErrorMessage(
             `Property sorting failed: ${
                 error instanceof Error ? error.message : String(error)
@@ -459,5 +459,5 @@ export function deactivate() {
     fileProcessorModule = undefined;
     formattingUtilsModule = undefined;
     filePatternFilterModule = undefined;
-    console.log('Bulk Property Sorter: Extension deactivated and cache cleared')
+    console.log('Spectro Tab Tools: Extension deactivated and cache cleared')
 }

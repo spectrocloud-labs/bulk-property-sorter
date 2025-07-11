@@ -46,25 +46,11 @@
           "filePattern": "src/extension\\.ts$"
         },
         {
-          "name": "Color Parsing Function",
-          "description": "Ensure color parsing functions handle all formats",
-          "pattern": "parseColor\\(|findColorStringsInDocument\\(",
-          "severity": "info",
-          "filePattern": "src/utils\\.ts$"
-        },
-        {
           "name": "Configuration Access",
           "description": "Use consistent configuration access patterns",
-          "pattern": "getConfiguration\\('bulk-property-sorter'\\)",
+          "pattern": "getConfiguration\\('spectro-tab-tools'\\)",
           "severity": "info",
           "filePattern": "src/extension\\.ts$"
-        },
-        {
-          "name": "Color Manipulation Functions",
-          "description": "Verify color manipulation functions follow project patterns",
-          "pattern": "(lightenColor|darkenColor|saturateColor|desaturateColor|setColorOpacity)",
-          "severity": "info",
-          "filePattern": "src/utils\\.ts$"
         },
         {
           "name": "JSDoc Comments",
@@ -104,7 +90,7 @@
         {
           "name": "Color Tool Commands",
           "description": "Check color tool command registration",
-          "pattern": "registerCommand\\('bulk-property-sorter\\.",
+          "pattern": "registerCommand\\('spectro-tab-tools\\.",
           "severity": "info",
           "filePattern": "src/extension\\.ts$"
         },
@@ -147,7 +133,7 @@
         {
           "name": "README Documentation",
           "description": "Ensure README documents all features",
-          "pattern": "\"command\":\\s*\"bulk-property-sorter\\.([^\"]+)\"",
+          "pattern": "\"command\":\\s*\"spectro-tab-tools\\.([^\"]+)\"",
           "severity": "warning",
           "filePattern": "package\\.json$",
           "message": "Command detected in package.json. Make sure it's documented in README.md"
@@ -155,7 +141,7 @@
         {
           "name": "Configuration Documentation",
           "description": "Ensure README documents all configuration options",
-          "pattern": "\"bulk-property-sorter\\.([^\"]+)\":\\s*\\{",
+          "pattern": "\"spectro-tab-tools\\.([^\"]+)\":\\s*\\{",
           "severity": "warning",
           "filePattern": "package\\.json$",
           "message": "Configuration option should be documented in README.md"

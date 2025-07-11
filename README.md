@@ -1,25 +1,14 @@
-# Bulk Property Sorter
+# Spectro Tab Tools
 
-A VS Code extension that provides intelligent property sorting for TypeScript, JavaScript, CSS, SCSS, SASS, LESS, JSON, YAML, and Go files while preserving comments, formatting, and code structure.
+A VS Code extension that provides 
 
 ## Features
-
-- **Multi-language Support**: Sort properties in TypeScript/JavaScript interfaces, object literals, CSS rules, JSON objects, YAML documents, and Go structs
-- **Smart Comment Preservation**: Maintains inline and block comments with their associated properties
-- **Recursive Nested Sorting**: Sort properties in nested object declarations and CSS rules (configurable)
-- **Spread Syntax Support**: Preserve object spread syntax (`...obj`) properties during sorting
-- **Semicolon Preservation**: Maintains original trailing punctuation style (semicolons, commas, or none) during sorting
-- **Vendor Prefix Handling**: Intelligent grouping of CSS vendor-prefixed properties
-- **Go Struct Tag Preservation**: Maintains complex Go struct tags exactly as written
-- **YAML-Specific Features**: Multi-document support, anchor/alias preservation, custom key ordering for Kubernetes/Docker Compose
-- **Format-aware Processing**: Respects different file formats (CSS, SCSS, SASS indented syntax, LESS, YAML)
-- **Configurable Sorting Options**: Extensive customization for different languages and use cases
 
 ## Installation
 
 1. Open VS Code, Cursor, or any other editor that supports VS Code extensions
 2. Go to Extensions (Ctrl+Shift+X)
-3. Search for "Bulk Property Sorter"
+3. Search for "Spectro Tab Tools"
 4. Click Install
 5. ???
 6. Profit!
@@ -43,7 +32,7 @@ A VS Code extension that provides intelligent property sorting for TypeScript, J
 
 ## Detailed Architecture Overview
 
-See [docs/bulk-property-sorter.md](docs/bulk-property-sorter.md) for detailed architectural diagrams and information.
+See [docs/spectro-tab-tools.md](docs/spectro-tab-tools.md) for detailed architectural diagrams and information.
 
 ## Examples
 
@@ -301,7 +290,7 @@ type Order struct {
         "test": "npm run compile && node ./out/test/runTest.js",
         "compile": "tsc -p ./"
     },
-    "name": "bulk-property-sorter",
+    "name": "spectro-tab-tools",
     "version": "0.5.1",
     "description": "Sort properties in TypeScript interfaces, objects, and more",
     "main": "./out/extension.js",
@@ -317,7 +306,7 @@ type Order struct {
         "vscode": "^1.83.0"
     },
     "main": "./out/extension.js",
-    "name": "bulk-property-sorter",
+    "name": "spectro-tab-tools",
     "scripts": {
         "compile": "tsc -p ./",
         "test": "npm run compile && node ./out/test/runTest.js"
@@ -679,11 +668,11 @@ service:
 
 ## Commands
 
-- **Sort Properties** (`bulk-property-sorter.sortProperties`) 
+- **Sort Properties** (`spectro-tab-tools.sortProperties`) 
   - **Shortcut**: `Ctrl+[` / `Cmd+[`
   - Sort properties in ascending order (A-Z)
 
-- **Sort Properties Descending** (`bulk-property-sorter.sortPropertiesDescending`)
+- **Sort Properties Descending** (`spectro-tab-tools.sortPropertiesDescending`)
   - **Shortcut**: `Ctrl+Shift+[` / `Cmd+Shift+[`
   - Sort properties in descending order (Z-A)
 
@@ -691,7 +680,7 @@ Both commands work on the entire file or just the selected text if you have a se
 
 ### Context Menu
 
-Context menu items are automatically shown only for supported file types (TypeScript, JavaScript, CSS, SCSS, SASS, LESS, Go, JSON, and YAML files). By default, only the "Sort Properties" command appears in the right-click context menu for a cleaner interface. To show the "Sort Properties Descending" option in the context menu as well, enable the `bulk-property-sorter.showDescendingOption` setting in your VS Code preferences.
+Context menu items are automatically shown only for supported file types (TypeScript, JavaScript, CSS, SCSS, SASS, LESS, Go, JSON, and YAML files). By default, only the "Sort Properties" command appears in the right-click context menu for a cleaner interface. To show the "Sort Properties Descending" option in the context menu as well, enable the `spectro-tab-tools.showDescendingOption` setting in your VS Code preferences.
 
 **Note:** Keyboard shortcuts for both commands remain available regardless of the context menu visibility setting.
 
@@ -741,7 +730,7 @@ Context menu items are automatically shown only for supported file types (TypeSc
 
 ## Contributing
 
-This extension is maintained by Spectro Cloud. Contributions, issues, and feature requests are welcome at the [GitHub repository](https://github.com/spectrocloud/bulk-property-sorter).
+This extension is maintained by Spectro Cloud. Contributions, issues, and feature requests are welcome at the [GitHub repository](https://github.com/spectrocloud/spectro-tab-tools).
 
 ## License
 

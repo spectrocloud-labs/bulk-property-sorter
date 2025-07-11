@@ -119,6 +119,11 @@ dev-debug.log
 *.njsproj
 *.sln
 *.sw?
-# Task files
 .taskmaster/
 *.vsix
+
+# OS specific
+
+# Task files
+# tasks.json
+# tasks/ 

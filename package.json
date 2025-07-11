@@ -1,6 +1,6 @@
 {
-  "name": "bulk-property-sorter",
-  "displayName": "Bulk Property Sorter",
+  "name": "spectro-tab-tools",
+  "displayName": "Spectro Tab Tools",
   "description": "VS Code extension that provides bulk, recursive, and customizable property sorting for TypeScript, JavaScript, CSS, SCSS, SASS, LESS, JSON, YAML, and Go files",
   "version": "0.7.1",
   "publisher": "spectrocloud",
@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/spectrocloud-labs/bulk-property-sorter.git"
+    "url": "https://github.com/spectrocloud-labs/spectro-tab-tools.git"
   },
   "icon": "images/logo.png",
   "categories": [
@@ -35,111 +35,111 @@
   "contributes": {
     "commands": [
       {
-        "command": "bulk-property-sorter.sortProperties",
+        "command": "spectro-tab-tools.sortProperties",
         "title": "Sort Properties (Ascending)",
-        "category": "Bulk Property Sorter"
+        "category": "Spectro Tab Tools"
       },
       {
-        "command": "bulk-property-sorter.sortPropertiesDescending",
+        "command": "spectro-tab-tools.sortPropertiesDescending",
         "title": "Sort Properties (Descending)",
-        "category": "Bulk Property Sorter"
+        "category": "Spectro Tab Tools"
       },
       {
-        "command": "bulk-property-sorter.test",
+        "command": "spectro-tab-tools.test",
         "title": "Test Extension",
-        "category": "Bulk Property Sorter"
+        "category": "Spectro Tab Tools"
       }
     ],
     "keybindings": [
       {
-        "command": "bulk-property-sorter.sortProperties",
+        "command": "spectro-tab-tools.sortProperties",
         "key": "ctrl+[",
         "mac": "cmd+[",
         "when": "editorTextFocus"
       },
       {
-        "command": "bulk-property-sorter.sortPropertiesDescending",
+        "command": "spectro-tab-tools.sortPropertiesDescending",
         "key": "ctrl+shift+[",
         "mac": "cmd+shift+[",
         "when": "editorTextFocus"
       }
     ],
     "configuration": {
-      "title": "Bulk Property Sorter",
+      "title": "Spectro Tab Tools",
       "properties": {
-        "bulk-property-sorter.excludedLanguages": {
+        "spectro-tab-tools.excludedLanguages": {
           "type": "array",
           "default": [],
           "description": "List of languages where the property sorter should be disabled."
         },
-        "bulk-property-sorter.includedFilePatterns": {
+        "spectro-tab-tools.includedFilePatterns": {
           "type": "array",
           "default": [
             "**/*"
           ],
           "description": "File patterns to include for property sorting (glob patterns)."
         },
-        "bulk-property-sorter.excludedFilePatterns": {
+        "spectro-tab-tools.excludedFilePatterns": {
           "type": "array",
           "default": [],
           "description": "File patterns to exclude from property sorting (glob patterns)."
         },
-        "bulk-property-sorter.sortNestedObjects": {
+        "spectro-tab-tools.sortNestedObjects": {
           "type": "boolean",
           "default": true,
           "description": "Enable recursive sorting of properties in nested object declarations."
         },
-        "bulk-property-sorter.showDescendingOption": {
+        "spectro-tab-tools.showDescendingOption": {
           "type": "boolean",
           "default": false,
           "description": "Show the 'Sort Properties Descending' option in the context menu."
         },
-        "bulk-property-sorter.css.groupVendorPrefixes": {
+        "spectro-tab-tools.css.groupVendorPrefixes": {
           "type": "boolean",
           "default": true,
           "description": "Group vendor-prefixed properties together (e.g., -webkit-, -moz-)."
         },
-        "bulk-property-sorter.css.sortByImportance": {
+        "spectro-tab-tools.css.sortByImportance": {
           "type": "boolean",
           "default": false,
           "description": "Sort properties with !important declarations first."
         },
-        "bulk-property-sorter.css.groupByCategory": {
+        "spectro-tab-tools.css.groupByCategory": {
           "type": "boolean",
           "default": false,
           "description": "Group CSS properties by category (layout, typography, visual effects, etc.) before sorting alphabetically within each group."
         },
-        "bulk-property-sorter.css.preserveMediaQueryOrder": {
+        "spectro-tab-tools.css.preserveMediaQueryOrder": {
           "type": "boolean",
           "default": true,
           "description": "Preserve the original order of media queries instead of sorting them."
         },
-        "bulk-property-sorter.css.sortNestedRules": {
+        "spectro-tab-tools.css.sortNestedRules": {
           "type": "boolean",
           "default": true,
           "description": "Sort nested rules in SCSS/SASS/LESS files (e.g., &:hover, &::before)."
         },
-        "bulk-property-sorter.css.groupVariables": {
+        "spectro-tab-tools.css.groupVariables": {
           "type": "boolean",
           "default": true,
           "description": "Group CSS custom properties (variables) at the beginning of rule blocks."
         },
-        "bulk-property-sorter.css.sortKeyframes": {
+        "spectro-tab-tools.css.sortKeyframes": {
           "type": "boolean",
           "default": false,
           "description": "Sort keyframe percentages in @keyframes rules (0%, 25%, 50%, 100%)."
         },
-        "bulk-property-sorter.css.preserveVendorPrefixOrder": {
+        "spectro-tab-tools.css.preserveVendorPrefixOrder": {
           "type": "boolean",
           "default": true,
           "description": "Preserve the standard order of vendor prefixes (-webkit-, -moz-, -ms-, -o-, standard)."
         },
-        "bulk-property-sorter.css.sortAtRules": {
+        "spectro-tab-tools.css.sortAtRules": {
           "type": "boolean",
           "default": false,
           "description": "Sort @import, @use, @forward statements alphabetically in SCSS/SASS files."
         },
-        "bulk-property-sorter.typescript.sortMethods": {
+        "spectro-tab-tools.typescript.sortMethods": {
           "type": "string",
           "enum": [
             "alphabetical",
@@ -150,37 +150,37 @@
           "default": "alphabetical",
           "description": "Method sorting preference for TypeScript classes. 'alphabetical' sorts by name, 'visibility' groups by public/private/protected, 'static-first' puts static methods first, 'lifecycle' follows component lifecycle order."
         },
-        "bulk-property-sorter.typescript.separateInterfacesAndClasses": {
+        "spectro-tab-tools.typescript.separateInterfacesAndClasses": {
           "type": "boolean",
           "default": false,
           "description": "Handle interfaces and classes with different sorting rules when both are present in the same file."
         },
-        "bulk-property-sorter.typescript.sortImportsExports": {
+        "spectro-tab-tools.typescript.sortImportsExports": {
           "type": "boolean",
           "default": false,
           "description": "Sort import and export statements alphabetically within their respective groups."
         },
-        "bulk-property-sorter.typescript.groupImportsByType": {
+        "spectro-tab-tools.typescript.groupImportsByType": {
           "type": "boolean",
           "default": true,
           "description": "Group imports by type: external libraries, internal modules, relative imports."
         },
-        "bulk-property-sorter.typescript.preserveMethodChaining": {
+        "spectro-tab-tools.typescript.preserveMethodChaining": {
           "type": "boolean",
           "default": true,
           "description": "Preserve method chaining order when sorting object properties that contain method calls."
         },
-        "bulk-property-sorter.typescript.sortConstructorParameters": {
+        "spectro-tab-tools.typescript.sortConstructorParameters": {
           "type": "boolean",
           "default": false,
           "description": "Sort constructor parameters alphabetically while preserving dependency injection order."
         },
-        "bulk-property-sorter.typescript.prioritizePublicMembers": {
+        "spectro-tab-tools.typescript.prioritizePublicMembers": {
           "type": "boolean",
           "default": false,
           "description": "Sort public class members before private/protected members."
         },
-        "bulk-property-sorter.go.sortStructFields": {
+        "spectro-tab-tools.go.sortStructFields": {
           "type": "string",
           "enum": [
             "alphabetical",
@@ -191,52 +191,52 @@
           "default": "alphabetical",
           "description": "Struct field sorting preference. 'alphabetical' sorts by name, 'by-type' groups by field type, 'by-size' orders by memory size, 'preserve-tags' maintains fields with struct tags together."
         },
-        "bulk-property-sorter.go.groupEmbeddedFields": {
+        "spectro-tab-tools.go.groupEmbeddedFields": {
           "type": "boolean",
           "default": true,
           "description": "Group embedded (anonymous) struct fields at the beginning of struct definitions."
         },
-        "bulk-property-sorter.go.sortMethodReceivers": {
+        "spectro-tab-tools.go.sortMethodReceivers": {
           "type": "boolean",
           "default": false,
           "description": "Sort methods by receiver type name when multiple receiver types are present in the same file."
         },
-        "bulk-property-sorter.go.preserveStructTags": {
+        "spectro-tab-tools.go.preserveStructTags": {
           "type": "boolean",
           "default": true,
           "description": "Preserve struct tag formatting and order when sorting struct fields."
         },
-        "bulk-property-sorter.go.groupByVisibility": {
+        "spectro-tab-tools.go.groupByVisibility": {
           "type": "boolean",
           "default": false,
           "description": "Group exported (public) fields before unexported (private) fields in struct definitions."
         },
-        "bulk-property-sorter.go.sortInterfaceMethods": {
+        "spectro-tab-tools.go.sortInterfaceMethods": {
           "type": "boolean",
           "default": true,
           "description": "Sort method signatures alphabetically within Go interface definitions."
         },
-        "bulk-property-sorter.go.preserveMethodSets": {
+        "spectro-tab-tools.go.preserveMethodSets": {
           "type": "boolean",
           "default": false,
           "description": "Keep related methods together based on common functionality patterns."
         },
-        "bulk-property-sorter.json.sortObjectKeys": {
+        "spectro-tab-tools.json.sortObjectKeys": {
           "type": "boolean",
           "default": true,
           "description": "Sort object keys alphabetically in JSON files."
         },
-        "bulk-property-sorter.json.preserveArrayOrder": {
+        "spectro-tab-tools.json.preserveArrayOrder": {
           "type": "boolean",
           "default": true,
           "description": "Preserve the original order of array elements instead of sorting them."
         },
-        "bulk-property-sorter.json.sortNestedObjects": {
+        "spectro-tab-tools.json.sortNestedObjects": {
           "type": "boolean",
           "default": true,
           "description": "Enable recursive sorting of properties in nested JSON objects."
         },
-        "bulk-property-sorter.json.customKeyOrder": {
+        "spectro-tab-tools.json.customKeyOrder": {
           "type": "array",
           "default": [],
           "description": "Custom key order list for JSON objects. Keys matching these names will be sorted first in the specified order.",
@@ -244,27 +244,27 @@
             "type": "string"
           }
         },
-        "bulk-property-sorter.json.groupBySchema": {
+        "spectro-tab-tools.json.groupBySchema": {
           "type": "boolean",
           "default": false,
           "description": "Group JSON properties by common schema patterns (e.g., metadata, configuration, data)."
         },
-        "bulk-property-sorter.json.preserveComments": {
+        "spectro-tab-tools.json.preserveComments": {
           "type": "boolean",
           "default": true,
           "description": "Preserve comments in JSON files (JSONC format). Note: Standard JSON does not support comments."
         },
-        "bulk-property-sorter.sorting.caseSensitive": {
+        "spectro-tab-tools.sorting.caseSensitive": {
           "type": "boolean",
           "default": true,
           "description": "Enable case-sensitive property sorting. When disabled, properties are sorted ignoring case differences."
         },
-        "bulk-property-sorter.sorting.naturalSort": {
+        "spectro-tab-tools.sorting.naturalSort": {
           "type": "boolean",
           "default": false,
           "description": "Enable natural sort order for properties containing numbers (e.g., 'item2' comes before 'item10')."
         },
-        "bulk-property-sorter.sorting.customOrder": {
+        "spectro-tab-tools.sorting.customOrder": {
           "type": "array",
           "default": [],
           "description": "Custom property order list. Properties matching these names will be sorted first in the specified order.",
@@ -272,17 +272,17 @@
             "type": "string"
           }
         },
-        "bulk-property-sorter.sorting.groupByType": {
+        "spectro-tab-tools.sorting.groupByType": {
           "type": "boolean",
           "default": false,
           "description": "Group properties by their type (e.g., methods, properties, getters/setters) before sorting alphabetically within each group."
         },
-        "bulk-property-sorter.sorting.prioritizeRequired": {
+        "spectro-tab-tools.sorting.prioritizeRequired": {
           "type": "boolean",
           "default": false,
           "description": "Sort required properties (without '?' in TypeScript) before optional properties."
         },
-        "bulk-property-sorter.formatting.indentationType": {
+        "spectro-tab-tools.formatting.indentationType": {
           "type": "string",
           "enum": [
             "auto",
@@ -292,14 +292,14 @@
           "default": "auto",
           "description": "Indentation type to use. 'auto' detects from editor settings, 'spaces' uses spaces, 'tabs' uses tabs."
         },
-        "bulk-property-sorter.formatting.indentationSize": {
+        "spectro-tab-tools.formatting.indentationSize": {
           "type": "number",
           "default": 4,
           "minimum": 1,
           "maximum": 8,
           "description": "Number of spaces to use for indentation when using spaces (ignored for tabs)."
         },
-        "bulk-property-sorter.formatting.lineEnding": {
+        "spectro-tab-tools.formatting.lineEnding": {
           "type": "string",
           "enum": [
             "auto",
@@ -309,12 +309,12 @@
           "default": "auto",
           "description": "Line ending style to use. 'auto' detects from file or uses platform default, 'lf' uses Unix-style (\\n), 'crlf' uses Windows-style (\\r\\n)."
         },
-        "bulk-property-sorter.formatting.preserveComments": {
+        "spectro-tab-tools.formatting.preserveComments": {
           "type": "boolean",
           "default": true,
           "description": "Whether to preserve comments in the output. When disabled, all comments are removed."
         },
-        "bulk-property-sorter.formatting.commentStyle": {
+        "spectro-tab-tools.formatting.commentStyle": {
           "type": "string",
           "enum": [
             "preserve",
@@ -324,7 +324,7 @@
           "default": "preserve",
           "description": "Comment formatting style. 'preserve' keeps original style, 'single-line' converts to //, 'multi-line' converts to /* */."
         },
-        "bulk-property-sorter.formatting.propertySpacing": {
+        "spectro-tab-tools.formatting.propertySpacing": {
           "type": "string",
           "enum": [
             "compact",
@@ -334,7 +334,7 @@
           "default": "compact",
           "description": "Property spacing style. 'compact' uses minimal spacing, 'spaced' adds space around colons, 'aligned' aligns property values."
         },
-        "bulk-property-sorter.formatting.trailingCommas": {
+        "spectro-tab-tools.formatting.trailingCommas": {
           "type": "string",
           "enum": [
             "preserve",
@@ -344,47 +344,47 @@
           "default": "preserve",
           "description": "Trailing comma handling. 'preserve' keeps original, 'add' ensures trailing commas, 'remove' removes trailing commas."
         },
-        "bulk-property-sorter.formatting.blankLinesBetweenGroups": {
+        "spectro-tab-tools.formatting.blankLinesBetweenGroups": {
           "type": "boolean",
           "default": false,
           "description": "Add blank lines between different property groups (when groupByType is enabled)."
         },
-        "bulk-property-sorter.yaml.sortObjectKeys": {
+        "spectro-tab-tools.yaml.sortObjectKeys": {
           "type": "boolean",
           "default": true,
           "description": "Sort object keys alphabetically in YAML files."
         },
-        "bulk-property-sorter.yaml.preserveArrayOrder": {
+        "spectro-tab-tools.yaml.preserveArrayOrder": {
           "type": "boolean",
           "default": true,
           "description": "Preserve the original order of array elements instead of sorting them."
         },
-        "bulk-property-sorter.yaml.sortNestedObjects": {
+        "spectro-tab-tools.yaml.sortNestedObjects": {
           "type": "boolean",
           "default": true,
           "description": "Enable recursive sorting of properties in nested YAML objects."
         },
-        "bulk-property-sorter.yaml.preserveAnchorsAndAliases": {
+        "spectro-tab-tools.yaml.preserveAnchorsAndAliases": {
           "type": "boolean",
           "default": true,
           "description": "Preserve YAML anchors (&anchor) and aliases (*alias) during sorting."
         },
-        "bulk-property-sorter.yaml.preserveDocumentSeparators": {
+        "spectro-tab-tools.yaml.preserveDocumentSeparators": {
           "type": "boolean",
           "default": true,
           "description": "Preserve YAML document separators (---) and maintain multi-document structure."
         },
-        "bulk-property-sorter.yaml.preserveStringStyles": {
+        "spectro-tab-tools.yaml.preserveStringStyles": {
           "type": "boolean",
           "default": true,
           "description": "Preserve YAML string folding styles (|, >, |-, >-) and quoting styles."
         },
-        "bulk-property-sorter.yaml.preserveComments": {
+        "spectro-tab-tools.yaml.preserveComments": {
           "type": "boolean",
           "default": true,
           "description": "Preserve comments in YAML files during sorting."
         },
-        "bulk-property-sorter.yaml.indentationStyle": {
+        "spectro-tab-tools.yaml.indentationStyle": {
           "type": "string",
           "enum": [
             "auto",
@@ -394,12 +394,12 @@
           "default": "auto",
           "description": "YAML indentation style. 'auto' detects from file, '2-spaces' uses 2 spaces, '4-spaces' uses 4 spaces."
         },
-        "bulk-property-sorter.yaml.handleComplexKeys": {
+        "spectro-tab-tools.yaml.handleComplexKeys": {
           "type": "boolean",
           "default": true,
           "description": "Handle complex keys (nested objects/arrays as keys) by preserving their structure during sorting."
         },
-        "bulk-property-sorter.yaml.customKeyOrder": {
+        "spectro-tab-tools.yaml.customKeyOrder": {
           "type": "array",
           "default": [],
           "description": "Custom key order list for YAML objects. Keys matching these names will be sorted first in the specified order (e.g., ['apiVersion', 'kind', 'metadata', 'spec']).",
@@ -407,7 +407,7 @@
             "type": "string"
           }
         },
-        "bulk-property-sorter.yaml.groupBySchema": {
+        "spectro-tab-tools.yaml.groupBySchema": {
           "type": "boolean",
           "default": false,
           "description": "Group YAML properties by common schema patterns (e.g., Kubernetes: apiVersion/kind → metadata → spec → status, Docker Compose: version → services → networks/volumes)."
@@ -417,14 +417,14 @@
     "menus": {
       "editor/context": [
         {
-          "command": "bulk-property-sorter.sortProperties",
-          "group": "bulk-property-sorter",
+          "command": "spectro-tab-tools.sortProperties",
+          "group": "spectro-tab-tools",
           "when": "editorTextFocus && (resourceLangId == 'typescript' || resourceLangId == 'typescriptreact' || resourceLangId == 'javascript' || resourceLangId == 'javascriptreact' || resourceLangId == 'css' || resourceLangId == 'scss' || resourceLangId == 'sass' || resourceLangId == 'less' || resourceLangId == 'go' || resourceLangId == 'json' || resourceLangId == 'jsonc' || resourceLangId == 'yaml' || resourceLangId == 'yml')"
         },
         {
-          "command": "bulk-property-sorter.sortPropertiesDescending",
-          "group": "bulk-property-sorter",
-          "when": "editorTextFocus && config.bulk-property-sorter.showDescendingOption && (resourceLangId == 'typescript' || resourceLangId == 'typescriptreact' || resourceLangId == 'javascript' || resourceLangId == 'javascriptreact' || resourceLangId == 'css' || resourceLangId == 'scss' || resourceLangId == 'sass' || resourceLangId == 'less' || resourceLangId == 'go' || resourceLangId == 'json' || resourceLangId == 'jsonc' || resourceLangId == 'yaml' || resourceLangId == 'yml')"
+          "command": "spectro-tab-tools.sortPropertiesDescending",
+          "group": "spectro-tab-tools",
+          "when": "editorTextFocus && config.spectro-tab-tools.showDescendingOption && (resourceLangId == 'typescript' || resourceLangId == 'typescriptreact' || resourceLangId == 'javascript' || resourceLangId == 'javascriptreact' || resourceLangId == 'css' || resourceLangId == 'scss' || resourceLangId == 'sass' || resourceLangId == 'less' || resourceLangId == 'go' || resourceLangId == 'json' || resourceLangId == 'jsonc' || resourceLangId == 'yaml' || resourceLangId == 'yml')"
         }
       ]
     }
